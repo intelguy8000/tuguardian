@@ -104,9 +104,9 @@ class OfficialSuggestionsWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nombre de la entidad
+          // Nombre de la entidad + "Canales Oficiales"
           Text(
-            suggestion.entityName,
+            '${suggestion.entityName} - Canales Oficiales',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -114,24 +114,108 @@ class OfficialSuggestionsWidget extends StatelessWidget {
             ),
           ),
           
-          const SizedBox(height: 8),
-          
-          Text(
-            'Para dudas o consultas, usa estos canales oficiales:',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          
           const SizedBox(height: 12),
           
-          // Botones de canales oficiales
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: suggestion.channels.map((channel) =>
-              _buildChannelButton(context, channel, suggestion.entityName)).toList(),
+          // Botones de canales oficiales - horizontales
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: _buildChannelButtons(context, suggestion),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildChannelButtons(BuildContext context, OfficialContactSuggestion suggestion) {
+    List<Widget> buttons = [];
+    
+    for (ContactChannel channel in suggestion.channels) {
+      switch (channel.type) {
+        case ContactChannelType.whatsapp:
+          buttons.add(_buildWhatsAppButton(context, channel, suggestion.entityName));
+          break;
+        case ContactChannelType.website:
+          buttons.add(_buildWebButton(context, channel, suggestion.entityName));
+          break;
+        case ContactChannelType.app:
+          buttons.add(_buildAppButton(context, suggestion.entityName));
+          break;
+      }
+    }
+    
+    // Si solo tiene app, mostrar mensaje simple
+    if (buttons.length == 1 && suggestion.channels.first.type == ContactChannelType.app) {
+      return [_buildSimpleAppMessage(context, suggestion.entityName)];
+    }
+    
+    return buttons;
+  }
+
+  Widget _buildWhatsAppButton(BuildContext context, ContactChannel channel, String entityName) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () => _openWhatsApp(context, channel.action, entityName),
+        icon: const Icon(Icons.chat, size: 18, color: Colors.white),
+        label: const Text('WhatsApp', style: TextStyle(fontSize: 12, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebButton(BuildContext context, ContactChannel channel, String entityName) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () => _openWebsite(context, channel.action, entityName),
+        icon: const Icon(Icons.web, size: 18, color: Colors.white),
+        label: const Text('Web Oficial', style: TextStyle(fontSize: 12, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppButton(BuildContext context, String entityName) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () => _showAppSuggestion(context, entityName),
+        icon: const Icon(Icons.mobile_app, size: 18, color: Colors.white),
+        label: const Text('App Oficial', style: TextStyle(fontSize: 12, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.purple,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimpleAppMessage(BuildContext context, String entityName) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.mobile_app, color: Colors.blue.shade700, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'Consultar en app oficial',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.blue.shade700,
+            ),
           ),
         ],
       ),
@@ -139,42 +223,8 @@ class OfficialSuggestionsWidget extends StatelessWidget {
   }
 
   Widget _buildChannelButton(BuildContext context, ContactChannel channel, String entityName) {
-    IconData icon;
-    Color color;
-    
-    switch (channel.type) {
-      case ContactChannelType.whatsapp:
-        icon = Icons.chat;
-        color = Colors.green;
-        break;
-      case ContactChannelType.app:
-        icon = Icons.mobile_app;
-        color = Colors.blue;
-        break;
-      case ContactChannelType.website:
-        icon = Icons.web;
-        color = Colors.purple;
-        break;
-    }
-
-    return ElevatedButton.icon(
-      onPressed: () => _handleChannelTap(context, channel, entityName),
-      icon: Icon(icon, size: 18),
-      label: Text(
-        channel.label,
-        style: const TextStyle(fontSize: 12),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color.shade50,
-        foregroundColor: color.shade700,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: color.shade200),
-        ),
-      ),
-    );
+    // Esta función ya no se usa, reemplazada por funciones específicas
+    return Container();
   }
 
   void _handleChannelTap(BuildContext context, ContactChannel channel, String entityName) {
