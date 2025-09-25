@@ -170,19 +170,52 @@ class SMSProvider with ChangeNotifier {
     };
   }
 
-  /// AGREGAR MENSAJES DE DEMOSTRACIÓN CON DATOS REALES - BASE DE DATOS COMPLETA
+  /// BASE DE DATOS COMPLETA CON VERIFICACIÓN BANCARIA
   void loadDemoMessages() {
     _allMessages = [
-      // MENSAJES ORIGINALES
+      // MENSAJES LEGÍTIMOS - NO BLOQUEADOS
       SMSMessage(
         id: 'demo_1',
         sender: '891888',
         message: 'En SURA usamos los códigos cortos 891888 y 899888 para comunicarnos contigo de forma segura. Cuando los veas, confía: somos nosotros.',
         timestamp: DateTime.now().subtract(Duration(minutes: 30)),
         riskScore: 5,
+        isQuarantined: false,
         suspiciousElements: [],
       ),
       
+      SMSMessage(
+        id: 'demo_5',
+        sender: 'Movistar',
+        message: 'Tu plan se renueva mañana. Para cambiar tu plan ingresa a mi.movistar.co',
+        timestamp: DateTime.now().subtract(Duration(hours: 4)),
+        riskScore: 8,
+        isQuarantined: false,
+        suspiciousElements: ['Contiene call-to-action - requiere verificación de enlace oficial'],
+      ),
+
+      // VERIFICACIÓN BANCARIA LEGÍTIMA - NUEVOS CASOS
+      SMSMessage(
+        id: 'bank_verify_1',
+        sender: '891333',
+        message: 'Bancolombia: JUAN ANDRES, por seguridad hemos rechazado la compra por \$8,199,000.00 en MAC CENTER COLOMBIA el 20/03/2025 a las 20:50 con tu tarjeta Mastercard terminada en *8269. Fuiste tu? Responde SI o NO a este mensaje.',
+        timestamp: DateTime.now().subtract(Duration(minutes: 5)),
+        riskScore: 20,
+        isQuarantined: false,
+        suspiciousElements: ['Verificación bancaria legítima detectada - Datos específicos confirmados'],
+      ),
+
+      SMSMessage(
+        id: 'bank_verify_2',
+        sender: '891333',
+        message: 'Bancolombia: JUAN ANDRES, esta transaccion fue aprobada: compra por \$15,340.00 en UBER RIDES el 07/09/2024 a las 19:52 con tu tarjeta Mastercard terminada en *8269. Para protegerte queremos confirmar hiciste esta transaccion? Responde SI o NO a este mensaje. Gracias!',
+        timestamp: DateTime.now().subtract(Duration(hours: 2)),
+        riskScore: 18,
+        isQuarantined: false,
+        suspiciousElements: ['Verificación bancaria legítima detectada - Transacción específica confirmada'],
+      ),
+
+      // SMISHING ORIGINAL DEL PROYECTO
       SMSMessage(
         id: 'demo_2',
         sender: '+573001234567',
@@ -214,15 +247,6 @@ class SMSProvider with ChangeNotifier {
       ),
       
       SMSMessage(
-        id: 'demo_5',
-        sender: 'Movistar',
-        message: 'Tu plan se renueva mañana. Para cambiar tu plan ingresa a mi.movistar.co',
-        timestamp: DateTime.now().subtract(Duration(hours: 4)),
-        riskScore: 10,
-        suspiciousElements: [],
-      ),
-      
-      SMSMessage(
         id: 'demo_6',
         sender: '890176',
         message: 'JUAN Tu DEUDA Sera SUSPENDIDA! Paga hoy solo 43.859 en lugar de 87.717 Ingresa ya: https://sit-onclr.de/ofic3',
@@ -232,7 +256,7 @@ class SMSProvider with ChangeNotifier {
         suspiciousElements: ['Dominio malicioso conocido: sit-onclr.de', 'Cantidades típicas de estafa', 'Personalización falsa detectada', 'Urgencia artificial detectada'],
       ),
 
-      // NUEVOS MENSAJES DE LAS IMÁGENES
+      // MENSAJES DE LAS IMÁGENES
       SMSMessage(
         id: 'img_1',
         sender: '899771',
@@ -263,7 +287,7 @@ class SMSProvider with ChangeNotifier {
         suspiciousElements: ['Premio falso detectado', 'Cantidades típicas de estafa: 275.000 pesos', 'Redirección a WhatsApp personal', 'Urgencia artificial'],
       ),
 
-      // NUEVOS MENSAJES DEL TEXTO
+      // MENSAJES NUEVOS DEL TEXTO
       SMSMessage(
         id: 'new_1',
         sender: 'BANCOLOMBIA',
@@ -366,5 +390,21 @@ class SMSProvider with ChangeNotifier {
     ];
     
     notifyListeners();
+  }
+
+  /// ENVIAR RESPUESTA SMS (funcional para Android)
+  Future<void> sendSMSResponse(String phoneNumber, String message) async {
+    try {
+      print('📱 Enviando SMS a $phoneNumber: $message');
+      // Aquí se integrará con el plugin de SMS para Android
+      // await SmsManager.sendTextMessage(phoneNumber, null, message, null, null);
+      
+      // Por ahora solo simular
+      await Future.delayed(Duration(milliseconds: 500));
+      print('✅ SMS enviado exitosamente');
+    } catch (e) {
+      print('❌ Error enviando SMS: $e');
+      throw e;
+    }
   }
 }

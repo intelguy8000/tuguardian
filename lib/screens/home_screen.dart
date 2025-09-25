@@ -5,7 +5,7 @@ import '../providers/theme_provider.dart';
 import '../models/sms_message.dart';
 import '../core/app_colors.dart';
 import 'settings_screen.dart';
-import 'message_detail_screen.dart'; // Importar nueva pantalla
+import 'message_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

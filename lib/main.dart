@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'providers/sms_provider.dart';
 import 'providers/theme_provider.dart';
+import 'core/app_colors.dart';
 
 void main() {
   runApp(const TuGuardianApp());
@@ -23,10 +24,30 @@ class TuGuardianApp extends StatelessWidget {
           return MaterialApp(
             title: 'TuGuardian',
             debugShowCheckedModeBanner: false,
-            theme: themeProvider.lightTheme,
-            darkTheme: themeProvider.darkTheme,
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+              primaryColor: AppColors.primary,
+              brightness: Brightness.light,
+              scaffoldBackgroundColor: Colors.white,
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                elevation: 0,
+              ),
+            ),
+            darkTheme: ThemeData(
+              primarySwatch: Colors.blue,
+              primaryColor: AppColors.primary,
+              brightness: Brightness.dark,
+              scaffoldBackgroundColor: AppColors.darkBackground,
+              appBarTheme: AppBarTheme(
+                backgroundColor: AppColors.darkBackground,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+            ),
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: HomeScreen(), // SIN CONST AQUÍ
+            home: HomeScreen(), // SIN CONST
           );
         },
       ),
