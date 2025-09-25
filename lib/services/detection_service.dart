@@ -1,4 +1,5 @@
 import '../models/sms_message.dart';
+import 'official_entities_service.dart';
 
 class DetectionService {
   // PATRONES BASADOS EN TUS SMS REALES
@@ -72,11 +73,30 @@ class DetectionService {
     'OPORTUNIDAD FAMILIAR',
   ];
 
-  /// ANÁLISIS PRINCIPAL CON TUS DATOS REALES
+  /// ANÁLISIS PRINCIPAL CON DETECCIÓN DE ENTIDADES OFICIALES
   static SMSMessage analyzeMessage(String id, String sender, String message, DateTime timestamp) {
     int riskScore = calculateRiskScore(message, sender);
     List<String> suspiciousElements = identifySuspiciousElements(message, sender);
     bool shouldQuarantine = riskScore >= 75; // Más agresivo para proteger mejor
+    
+    // 🆕 NUEVA FUNCIONALIDAD: Detectar entidades oficiales mencionadas
+    List<OfficialEntity> detectedEntities = [];
+    List<OfficialContactSuggestion> officialSuggestions = [];
+    
+    // Solo para mensajes ROJOS (>=70) detectar entidades para sugerencias
+    if (riskScore >= 70) {
+      detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
+      
+      if (detectedEntities.isNotEmpty) {
+        officialSuggestions = OfficialEntitiesService.generateContactSuggestions(detectedEntities);
+        
+        // Agregar elemento sospechoso si suplanta entidades conocidas
+        suspiciousElements.add('Suplanta entidad conocida: ${detectedEntities.map((e) => e.name).join(', ')}');
+        
+        // Incrementar score por suplantación de identidad
+        riskScore = (riskScore + 10).clamp(0, 100);
+      }
+    }
     
     return SMSMessage(
       id: id,
@@ -86,6 +106,9 @@ class DetectionService {
       riskScore: riskScore,
       isQuarantined: shouldQuarantine,
       suspiciousElements: suspiciousElements,
+      // 🆕 NUEVOS CAMPOS
+      detectedEntities: detectedEntities,
+      officialSuggestions: officialSuggestions,
     );
   }
   
