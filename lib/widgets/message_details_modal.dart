@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/sms_message.dart';
+import '../widgets/official_suggestions_widget.dart';
 
 class MessageDetailsModal extends StatelessWidget {
   final SMSMessage message;
@@ -58,6 +59,9 @@ class MessageDetailsModal extends StatelessWidget {
                       _buildAnalysisDetails(),
                       SizedBox(height: 20),
                       _buildRecommendations(),
+                      SizedBox(height: 20),
+                      // 🆕 WIDGET DE CANALES OFICIALES
+                      OfficialSuggestionsWidget(smsMessage: message),
                       SizedBox(height: 20),
                       _buildActionButtons(context),
                     ],

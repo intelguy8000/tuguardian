@@ -97,7 +97,7 @@ class DetectionService {
         riskScore = (riskScore + 10).clamp(0, 100);
       }
     }
-    
+    print('🔍 DETECTION: Entities=${detectedEntities.length}, Suggestions=${officialSuggestions.length}');
     return SMSMessage(
       id: id,
       sender: sender,

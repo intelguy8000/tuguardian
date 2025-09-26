@@ -5,6 +5,7 @@ import '../providers/theme_provider.dart';
 import '../providers/sms_provider.dart';
 import '../models/sms_message.dart';
 import '../core/app_colors.dart';
+import '../widgets/official_suggestions_widget.dart';
 
 class MessageDetailScreen extends StatefulWidget {
   final SMSMessage message;
@@ -245,7 +246,8 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   }
 
   Widget _buildTuGuardianResponse(bool isDark, bool isThreat, bool isVerification) {
-    final userIntent = _detectUserIntentLocal(widget.message.message);
+  final userIntent = _detectUserIntentLocal(widget.message.message);
+  // resto del código continúa...
     
     String responseText;
     if (isVerification) {
@@ -317,6 +319,15 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                             ),
                           ),
                         ),
+                      ),
+                    ],
+                    
+                    // 🆕 WIDGET DE CANALES OFICIALES
+                    if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        child: OfficialSuggestionsWidget(smsMessage: widget.message),
                       ),
                     ],
                     

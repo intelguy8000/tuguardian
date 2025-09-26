@@ -22,9 +22,9 @@ class OfficialSuggestionsWidget extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: Colors.blue[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: Colors.blue[200]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,17 +34,17 @@ class OfficialSuggestionsWidget extends StatelessWidget {
             children: [
               Icon(
                 Icons.security,
-                color: Colors.blue.shade700,
+                color: Colors.blue[700],
                 size: 24,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '🛡️ Canales Oficiales Verificados',
+                  'Canales Oficiales Verificados',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade800,
+                    color: Colors.blue[800],
                   ),
                 ),
               ),
@@ -57,15 +57,15 @@ class OfficialSuggestionsWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: Colors.orange[50],
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange.shade200),
+              border: Border.all(color: Colors.orange[200]!),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.warning_amber,
-                  color: Colors.orange.shade700,
+                  color: Colors.orange[700],
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -74,7 +74,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
                     smsMessage.securityAdvice,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.orange.shade800,
+                      color: Colors.orange[800],
                     ),
                   ),
                 ),
@@ -99,7 +99,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.grey[300]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +170,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
     return Expanded(
       child: ElevatedButton.icon(
         onPressed: () => _openWebsite(context, channel.action, entityName),
-        icon: const Icon(Icons.web, size: 18, color: Colors.white),
+        icon: const Icon(Icons.language, size: 18, color: Colors.white),
         label: const Text('Web Oficial', style: TextStyle(fontSize: 12, color: Colors.white)),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
@@ -185,7 +185,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
     return Expanded(
       child: ElevatedButton.icon(
         onPressed: () => _showAppSuggestion(context, entityName),
-        icon: const Icon(Icons.mobile_app, size: 18, color: Colors.white),
+        icon: const Icon(Icons.phone_android, size: 18, color: Colors.white),
         label: const Text('App Oficial', style: TextStyle(fontSize: 12, color: Colors.white)),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.purple,
@@ -200,45 +200,26 @@ class OfficialSuggestionsWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: Colors.blue[50],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: Colors.blue[200]!),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.mobile_app, color: Colors.blue.shade700, size: 20),
+          Icon(Icons.phone_android, color: Colors.blue[700], size: 20),
           const SizedBox(width: 8),
           Text(
             'Consultar en app oficial',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.blue.shade700,
+              color: Colors.blue[700],
             ),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildChannelButton(BuildContext context, ContactChannel channel, String entityName) {
-    // Esta función ya no se usa, reemplazada por funciones específicas
-    return Container();
-  }
-
-  void _handleChannelTap(BuildContext context, ContactChannel channel, String entityName) {
-    switch (channel.type) {
-      case ContactChannelType.whatsapp:
-        _openWhatsApp(context, channel.action, entityName);
-        break;
-      case ContactChannelType.website:
-        _openWebsite(context, channel.action, entityName);
-        break;
-      case ContactChannelType.app:
-        _showAppSuggestion(context, entityName);
-        break;
-    }
   }
 
   void _openWhatsApp(BuildContext context, String whatsappUrl, String entityName) async {
@@ -312,7 +293,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.mobile_app, color: Colors.blue.shade700),
+              Icon(Icons.phone_android, color: Colors.blue[700]),
               const SizedBox(width: 8),
               Text('App Oficial de $entityName'),
             ],
@@ -329,19 +310,19 @@ class OfficialSuggestionsWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.security, color: Colors.blue.shade700, size: 20),
+                    Icon(Icons.security, color: Colors.blue[700], size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Las apps oficiales son el canal más seguro para consultas y transacciones.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.blue.shade700,
+                          color: Colors.blue[700],
                         ),
                       ),
                     ),
