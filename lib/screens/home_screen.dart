@@ -220,7 +220,6 @@ leadingWidth: 80, // Agregar esta línea después del leading
               ),
             ),
           ),
-          child: Row(
             children: [
               Expanded(
                 child: Container(
