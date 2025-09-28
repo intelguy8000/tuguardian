@@ -133,8 +133,11 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   const SizedBox(height: 20),
                   _buildIncomingMessage(isDark, isThreat, isVerification),
                   const SizedBox(height: 16),
-                  if (isThreat || hasCallToAction || isVerification || widget.message.hasOfficialSuggestions) 
+                  if (isThreat || hasCallToAction || isVerification) 
                     _buildTuGuardianResponse(isDark, isThreat, isVerification),
+                  const SizedBox(height: 16),
+                  // Widget de canales oficiales SEPARADO del mensaje de TuGuardian
+                  OfficialSuggestionsWidget(smsMessage: widget.message),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -246,106 +249,86 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   }
 
   Widget _buildTuGuardianResponse(bool isDark, bool isThreat, bool isVerification) {
-  final userIntent = _detectUserIntentLocal(widget.message.message);
-    
-  String responseText;
-  if (isVerification) {
-    responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
-  } else if (isThreat) {
-    if (userIntent['detected']) {
-      responseText = '⚠️ Mensaje falso detectado. Usa solo canales verificados:';
+    String responseText;
+    if (isVerification) {
+      responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
+    } else if (isThreat) {
+      responseText = 'Mensaje falso detectado. Usa solo canales verificados:';
     } else {
-      responseText = '⚠️ Mensaje falso detectado. No interactúes con él.';
+      responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
     }
-  } else {
-    responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
-  }
 
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      const Spacer(),
-      Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(4),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    responseText,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        const Spacer(),
+        Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(18),
+                    bottomLeft: Radius.circular(18),
+                    bottomRight: Radius.circular(4),
                   ),
-                  
-                  if (userIntent['detected'] && !isVerification) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _redirectToOfficialSite(userIntent),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          userIntent['buttonText'],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.warning, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          responseText,
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
                           ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => _showMoreOptions(isDark),
+                      child: Text(
+                        'Más opciones',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.white70,
                         ),
                       ),
                     ),
                   ],
-                  
-                  // Widget de canales oficiales
-                  if (widget.message.hasOfficialSuggestions && (widget.message.isQuarantined || widget.message.isModerate)) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      child: OfficialSuggestionsWidget(smsMessage: widget.message),
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'TuGuardian • ${_formatTime(DateTime.now())}',
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
-                fontSize: 11,
+              const SizedBox(height: 4),
+              Text(
+                'TuGuardian • ${_formatTime(DateTime.now())}',
+                style: TextStyle(
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
+                  fontSize: 11,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
+
   Widget _buildReplyField(bool isDark, bool isThreat) {
     final canReply = !isThreat || _isUnlocked;
     
@@ -622,45 +605,6 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
     }
   }
 
-  Map<String, dynamic> _detectUserIntentLocal(String message) {
-    final lowerMessage = message.toLowerCase();
-    
-    if ((lowerMessage.contains('claro') || lowerMessage.contains('factura')) && 
-        (lowerMessage.contains('pag') || lowerMessage.contains('venc') || lowerMessage.contains('consulta'))) {
-      return {
-        'detected': true,
-        'action': 'pagar tu factura Claro',
-        'company': 'Claro',
-        'officialUrl': 'https://www.claro.com.co/',
-        'buttonText': 'Ir a Claro oficial',
-      };
-    }
-    
-    if (lowerMessage.contains('movistar') && 
-        (lowerMessage.contains('plan') || lowerMessage.contains('renovar') || lowerMessage.contains('ingresa'))) {
-      return {
-        'detected': true,
-        'action': 'gestionar tu plan Movistar',
-        'company': 'Movistar',
-        'officialUrl': 'https://www.movistar.com.co/',
-        'buttonText': 'Ir a Movistar oficial',
-      };
-    }
-    
-    if (lowerMessage.contains('banco') || lowerMessage.contains('cuenta') || 
-        lowerMessage.contains('bancolombia')) {
-      return {
-        'detected': true,
-        'action': 'revisar tu cuenta bancaria',
-        'company': 'tu banco',
-        'officialUrl': 'https://www.bancolombia.com/',
-        'buttonText': 'Ir al banco oficial',
-      };
-    }
-    
-    return {'detected': false};
-  }
-
   void _showMoreOptions(bool isDark) {
     showModalBottomSheet(
       context: context,
@@ -781,56 +725,6 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                 Navigator.pop(context);
                 _reportThreat();
               },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _redirectToOfficialSite(Map<String, dynamic> intent) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Icon(Icons.security, color: Colors.green, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Sitio Oficial Verificado',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Te dirigimos al sitio oficial verificado.',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Continuar'),
             ),
           ],
         ),
