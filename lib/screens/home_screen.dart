@@ -56,11 +56,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: AppColors.primaryTech,
                 fontSize: 17,
                 fontWeight: FontWeight.w400,
-      ),
-    ),
-  ),
-),
-leadingWidth: 80, // Agregar esta línea después del leading
+              ),
+            ),
+          ),
+        ),
+        leadingWidth: 80,
         title: Text(
           'TuGuardian',
           style: TextStyle(
@@ -110,7 +110,7 @@ leadingWidth: 80, // Agregar esta línea después del leading
               unselectedLabelColor: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               indicatorColor: AppColors.primary,
               indicatorWeight: 3,
-              indicatorSize: TabBarIndicatorSize.tab, // Línea completa bajo cada tab
+              indicatorSize: TabBarIndicatorSize.tab,
               labelStyle: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -219,67 +219,68 @@ leadingWidth: 80, // Agregar esta línea después del leading
                 ),
               ),
             ),
-          ),
-            children: [
-              Expanded(
-                child: Container(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBackground : Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar',
+                        hintStyle: TextStyle(
+                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkBackground : Colors.white,
+                    color: AppColors.primaryTech,
                     borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
-                    ),
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
+                  child: IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Composer próximamente'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     },
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Buscar',
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primaryTech, // Azul tecnológico
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Composer próximamente'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -288,17 +289,14 @@ leadingWidth: 80, // Agregar esta línea después del leading
 
   Widget _buildMessageRow(SMSMessage message, bool isDark) {
     final isThreat = message.riskScore >= 70;
-    // Lógica de leído/no leído
     final isUnread = !_readMessages.contains(message.id);
     
     return GestureDetector(
       onTap: () {
-        // Marcar como leído al hacer tap
         setState(() {
           _readMessages.add(message.id);
         });
         
-        // Navegar a vista detalle SIEMPRE - la lógica de amenaza está ahí
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -311,23 +309,23 @@ leadingWidth: 80, // Agregar esta línea después del leading
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            // PUNTO AZUL ESTILO iOS - AL INICIO DE LA FILA (IZQUIERDA DEL AVATAR)
-              Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.only(right: 8),
-                decoration: BoxDecoration(
-                  color: isUnread ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            // PUNTO AZUL ESTILO iOS - ESPACIO FIJO PARA MANTENER ALINEACIÓN
+            Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: isUnread ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(4),
               ),
+            ),
             
-            // Avatar circular - AZUL CLARO ARMONIZADO
+            // Avatar circular
             Container(
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight, // Azul claro armonizado
+                color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(25),
                 border: isThreat ? Border.all(
                   color: Colors.red,
@@ -349,7 +347,6 @@ leadingWidth: 80, // Agregar esta línea después del leading
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Fila superior: Nombre y hora
                   Row(
                     children: [
                       Expanded(
@@ -378,8 +375,6 @@ leadingWidth: 80, // Agregar esta línea después del leading
                     ],
                   ),
                   const SizedBox(height: 4),
-                  
-                  // Contenido del mensaje
                   Text(
                     message.message,
                     maxLines: 2,
@@ -389,7 +384,6 @@ leadingWidth: 80, // Agregar esta línea después del leading
                       fontSize: 14,
                     ),
                   ),
-                  // REMOVIDO EL BADGE DE RIESGO
                 ],
               ),
             ),
@@ -543,7 +537,6 @@ leadingWidth: 80, // Agregar esta línea después del leading
     }
   }
 
-  // INTERCEPTOR DE AMENAZAS - GUARDIAN DE SEGURIDAD
   void _showThreatInterceptor(SMSMessage message) {
     showDialog(
       context: context,
