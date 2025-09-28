@@ -160,14 +160,11 @@ class SMSProvider with ChangeNotifier {
         suspiciousElements: [],
       ),
       
-      SMSMessage(
-        id: 'demo_5',
-        sender: 'Movistar',
-        message: 'Tu plan se renueva mañana. Para cambiar tu plan ingresa a mi.movistar.co',
-        timestamp: DateTime.now().subtract(Duration(hours: 4)),
-        riskScore: 35,
-        isQuarantined: false,
-        suspiciousElements: ['Contiene call-to-action - requiere verificación de enlace oficial'],
+      DetectionService.analyzeMessage(
+        'demo_5',
+        'Movistar',
+        'Tu plan se renueva mañana. Para cambiar tu plan ingresa a mi.movistar.co',
+        DateTime.now().subtract(Duration(hours: 4)),
       ),
 
       SMSMessage(
