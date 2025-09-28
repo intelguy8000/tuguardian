@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/sms_message.dart';
+import '../services/detection_service.dart';
 
 class SMSProvider with ChangeNotifier {
   List<SMSMessage> _allMessages = [];
@@ -8,10 +9,8 @@ class SMSProvider with ChangeNotifier {
   String? _error;
   bool _isRealModeEnabled = false;
   
-  // Callback para alertas
   Function(BuildContext, SMSMessage)? onThreatDetected;
   
-  // Getters
   List<SMSMessage> get allMessages => _allMessages;
   List<SMSMessage> get safeMessages => 
       _allMessages.where((msg) => msg.isSafe).toList();
@@ -31,26 +30,19 @@ class SMSProvider with ChangeNotifier {
     loadDemoMessages();
   }
 
-  /// SIMULAR LLEGADA DE SMS MALICIOSO (para demo)
   void simulateThreatSMS(BuildContext context) {
-    SMSMessage threatMessage = SMSMessage(
-      id: 'threat_${DateTime.now().millisecondsSinceEpoch}',
-      sender: '+573001234567',
-      message: 'URGENTE! Tu cuenta bancaria será suspendida. Confirma tus datos AHORA: https://banco-falso.com/confirmar',
-      timestamp: DateTime.now(),
-      riskScore: 98,
-      isQuarantined: true,
-      suspiciousElements: ['Urgencia artificial', 'URL maliciosa', 'Phishing detectado'],
+    SMSMessage threatMessage = DetectionService.analyzeMessage(
+      'threat_${DateTime.now().millisecondsSinceEpoch}',
+      '+573001234567',
+      'URGENTE! Tu cuenta bancaria será suspendida. Confirma tus datos AHORA: https://banco-falso.com/confirmar',
+      DateTime.now(),
     );
     
     _allMessages.insert(0, threatMessage);
     notifyListeners();
-    
-    // Mostrar alerta inmediata
     _showThreatAlert(context, threatMessage);
   }
 
-  /// MOSTRAR ALERTA DE AMENAZA
   void _showThreatAlert(BuildContext context, SMSMessage message) {
     showDialog(
       context: context,
@@ -77,10 +69,7 @@ class SMSProvider with ChangeNotifier {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'SMS peligroso bloqueado:',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
+            Text('SMS peligroso bloqueado:', style: TextStyle(fontWeight: FontWeight.w600)),
             SizedBox(height: 8),
             Text('De: ${message.sender}'),
             SizedBox(height: 4),
@@ -103,10 +92,7 @@ class SMSProvider with ChangeNotifier {
             SizedBox(height: 12),
             Text(
               '✅ TuGuardian te protegió automáticamente',
-              style: TextStyle(
-                color: Colors.green[700],
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -125,7 +111,6 @@ class SMSProvider with ChangeNotifier {
     );
   }
 
-  /// ACTIVAR MODO REAL (SMS del dispositivo) - SIMPLIFICADO
   Future<bool> enableRealMode() async {
     _isLoading = true;
     _error = null;
@@ -133,17 +118,11 @@ class SMSProvider with ChangeNotifier {
     
     try {
       print('🚀 Modo real se activará en dispositivo Android...');
-      
-      // Por ahora, simular que se activó
       _isRealModeEnabled = true;
-      
-      // Mantener mensajes demo pero marcar como "modo real"
       loadDemoMessages();
-      
       _isLoading = false;
       notifyListeners();
       return true;
-      
     } catch (e) {
       _error = 'Error activando modo real: $e';
       _isLoading = false;
@@ -152,12 +131,10 @@ class SMSProvider with ChangeNotifier {
     }
   }
 
-  /// CARGAR MENSAJES (UNIFICADO)
   void loadSMSMessages() {
     loadDemoMessages();
   }
 
-  /// OBTENER ESTADÍSTICAS DE PROTECCIÓN
   Map<String, dynamic> getProtectionStats() {
     return {
       'totalMessages': totalMessages,
@@ -170,10 +147,9 @@ class SMSProvider with ChangeNotifier {
     };
   }
 
-  /// BASE DE DATOS COMPLETA CON VERIFICACIÓN BANCARIA
   void loadDemoMessages() {
     _allMessages = [
-      // MENSAJES LEGÍTIMOS - NO BLOQUEADOS
+      // MENSAJES LEGÍTIMOS - Creados manualmente
       SMSMessage(
         id: 'demo_1',
         sender: '891888',
@@ -194,7 +170,6 @@ class SMSProvider with ChangeNotifier {
         suspiciousElements: ['Contiene call-to-action - requiere verificación de enlace oficial'],
       ),
 
-      // VERIFICACIÓN BANCARIA LEGÍTIMA - NUEVOS CASOS
       SMSMessage(
         id: 'bank_verify_1',
         sender: '891333',
@@ -215,191 +190,133 @@ class SMSProvider with ChangeNotifier {
         suspiciousElements: ['Verificación bancaria legítima detectada - Transacción específica confirmada'],
       ),
 
-      // SMISHING ORIGINAL DEL PROYECTO
-      SMSMessage(
-        id: 'demo_2',
-        sender: '+573001234567',
-        message: 'JUAN HOY VENCE TU FACTURA CLARO!. Ponte al dia y Paga tan solo 43.859 Por tu OBLIGACION de 87.717 Consulta con tu 3217726074: https://mcpag.li/c3',
-        timestamp: DateTime.now().subtract(Duration(hours: 1)),
-        riskScore: 95,
-        isQuarantined: true,
-        suspiciousElements: ['Dominio malicioso conocido: mcpag.li', 'Cantidades típicas de estafa', 'Personalización falsa detectada', 'Urgencia artificial detectada'],
+      // MENSAJES PELIGROSOS - Usar DetectionService
+      DetectionService.analyzeMessage(
+        'demo_2',
+        '+573001234567',
+        'JUAN HOY VENCE TU FACTURA CLARO!. Ponte al dia y Paga tan solo 43.859 Por tu OBLIGACION de 87.717 Consulta con tu 3217726074: https://mcpag.li/c3',
+        DateTime.now().subtract(Duration(hours: 1)),
       ),
       
-      SMSMessage(
-        id: 'demo_3',
-        sender: '890176',
-        message: 'Apreciado cliente INTERRAPIDISIMO, en el siguiente link descarga la factura de tu envio: https://inter.la/tQHIMEr/Mi83ODUwOTc5Ng==',
-        timestamp: DateTime.now().subtract(Duration(hours: 2)),
-        riskScore: 88,
-        isQuarantined: true,
-        suspiciousElements: ['Empresa falsa detectada', 'Dominio malicioso conocido: inter.la'],
+      DetectionService.analyzeMessage(
+        'demo_3',
+        '890176',
+        'Apreciado cliente INTERRAPIDISIMO, en el siguiente link descarga la factura de tu envio: https://inter.la/tQHIMEr/Mi83ODUwOTc5Ng==',
+        DateTime.now().subtract(Duration(hours: 2)),
       ),
       
-      SMSMessage(
-        id: 'demo_4',
-        sender: '890176',
-        message: 'Estas dentro del Programa Oportunidad Familiar. Tu recompensas sera de 300,000 pesos. ¡Por favor contactame por WS para reclamar tu bono! 573106172605',
-        timestamp: DateTime.now().subtract(Duration(hours: 3)),
-        riskScore: 92,
-        isQuarantined: true,
-        suspiciousElements: ['Empresa falsa detectada', 'Cantidades típicas de estafa'],
+      DetectionService.analyzeMessage(
+        'demo_4',
+        '890176',
+        'Estas dentro del Programa Oportunidad Familiar. Tu recompensas sera de 300,000 pesos. ¡Por favor contactame por WS para reclamar tu bono! 573106172605',
+        DateTime.now().subtract(Duration(hours: 3)),
       ),
       
-      SMSMessage(
-        id: 'demo_6',
-        sender: '890176',
-        message: 'JUAN Tu DEUDA Sera SUSPENDIDA! Paga hoy solo 43.859 en lugar de 87.717 Ingresa ya: https://sit-onclr.de/ofic3',
-        timestamp: DateTime.now().subtract(Duration(hours: 5)),
-        riskScore: 96,
-        isQuarantined: true,
-        suspiciousElements: ['Dominio malicioso conocido: sit-onclr.de', 'Cantidades típicas de estafa', 'Personalización falsa detectada', 'Urgencia artificial detectada'],
+      DetectionService.analyzeMessage(
+        'demo_6',
+        '890176',
+        'JUAN Tu DEUDA Sera SUSPENDIDA! Paga hoy solo 43.859 en lugar de 87.717 Ingresa ya: https://sit-onclr.de/ofic3',
+        DateTime.now().subtract(Duration(hours: 5)),
       ),
 
-      // MENSAJES DE LAS IMÁGENES
-      SMSMessage(
-        id: 'img_1',
-        sender: '899771',
-        message: 'Servicio de Puntos Primax: Los 7999 puntos acumulados en su cuenta vencen hoy. Visite: https://www.primaxa.co/co para aprender a usarlos gratis.',
-        timestamp: DateTime.now().subtract(Duration(days: 2)),
-        riskScore: 87,
-        isQuarantined: true,
-        suspiciousElements: ['Dominio falso detectado: primaxa.co (real: primax.com.co)', 'Urgencia artificial: "vencen hoy"', 'Cantidades específicas sospechosas'],
+      DetectionService.analyzeMessage(
+        'img_1',
+        '899771',
+        'Servicio de Puntos Primax: Los 7999 puntos acumulados en su cuenta vencen hoy. Visite: https://www.primaxa.co/co para aprender a usarlos gratis.',
+        DateTime.now().subtract(Duration(days: 2)),
       ),
       
-      SMSMessage(
-        id: 'img_2',
-        sender: '899771',
-        message: 'Aviso de canje de Occidente. Los 11600 puntos vencen hoy. Puedes canjearlos por un regalo especial en el sitio web oficial. Detalles: https://bit.ly/4oUHZTt',
-        timestamp: DateTime.now().subtract(Duration(days: 3)),
-        riskScore: 92,
-        isQuarantined: true,
-        suspiciousElements: ['Dominio acortado sospechoso: bit.ly', 'Urgencia artificial: "vencen hoy"', 'Cantidades específicas sospechosas', 'Empresa falsificada'],
+      DetectionService.analyzeMessage(
+        'img_2',
+        '899771',
+        'Aviso de canje de Occidente. Los 11600 puntos vencen hoy. Puedes canjearlos por un regalo especial en el sitio web oficial. Detalles: https://bit.ly/4oUHZTt',
+        DateTime.now().subtract(Duration(days: 3)),
       ),
       
-      SMSMessage(
-        id: 'img_3',
-        sender: '899771',
-        message: '¡Felicidades! Has sido seleccionado y puedes obtener 275.000 pesos. Envía un mensaje a mi WhatsApp ahora: http://wa.me/573027330063',
-        timestamp: DateTime.now().subtract(Duration(days: 5)),
-        riskScore: 96,
-        isQuarantined: true,
-        suspiciousElements: ['Premio falso detectado', 'Cantidades típicas de estafa: 275.000 pesos', 'Redirección a WhatsApp personal', 'Urgencia artificial'],
+      DetectionService.analyzeMessage(
+        'img_3',
+        '899771',
+        '¡Felicidades! Has sido seleccionado y puedes obtener 275.000 pesos. Envía un mensaje a mi WhatsApp ahora: http://wa.me/573027330063',
+        DateTime.now().subtract(Duration(days: 5)),
       ),
 
-      // MENSAJES NUEVOS DEL TEXTO
-      SMSMessage(
-        id: 'new_1',
-        sender: 'BANCOLOMBIA',
-        message: 'Su cuenta Bancolombia ha sido bloqueada. Ingrese ahora a http://bancolombia-seguro.co para verificar.',
-        timestamp: DateTime.now().subtract(Duration(minutes: 15)),
-        riskScore: 98,
-        isQuarantined: true,
-        suspiciousElements: ['Dominio falso detectado: bancolombia-seguro.co', 'Empresa bancaria falsificada', 'Urgencia artificial: "ahora"', 'Phishing bancario detectado'],
+      DetectionService.analyzeMessage(
+        'new_1',
+        'BANCOLOMBIA',
+        'Su cuenta Bancolombia ha sido bloqueada. Ingrese ahora a http://bancolombia-seguro.co para verificar.',
+        DateTime.now().subtract(Duration(minutes: 15)),
       ),
 
-      SMSMessage(
-        id: 'new_2',
-        sender: '+573001234567',
-        message: 'Felicidades! Eres el gran ganador de \$50.000.000. Reclama aquí: http://premios-colombia.net',
-        timestamp: DateTime.now().subtract(Duration(minutes: 30)),
-        riskScore: 95,
-        isQuarantined: true,
-        suspiciousElements: ['Premio falso detectado', 'Cantidad excesiva sospechosa: 50 millones', 'Dominio genérico: premios-colombia.net', 'Urgencia emocional'],
+      DetectionService.analyzeMessage(
+        'new_2',
+        '+573001234567',
+        'Felicidades! Eres el gran ganador de \$50.000.000. Reclama aquí: http://premios-colombia.net',
+        DateTime.now().subtract(Duration(minutes: 30)),
       ),
 
-      SMSMessage(
-        id: 'new_3',
-        sender: 'PENSIONES',
-        message: 'Su pensión ha sido suspendida. Comuníquese de inmediato al 01-800-XXX-XXX.',
-        timestamp: DateTime.now().subtract(Duration(hours: 1)),
-        riskScore: 89,
-        isQuarantined: true,
-        suspiciousElements: ['Entidad gubernamental falsificada', 'Urgencia artificial: "de inmediato"', 'Número genérico sospechoso', 'Amenaza de suspensión'],
+      DetectionService.analyzeMessage(
+        'new_3',
+        'PENSIONES',
+        'Su pensión ha sido suspendida. Comuníquese de inmediato al 01-800-XXX-XXX.',
+        DateTime.now().subtract(Duration(hours: 1)),
       ),
 
-      SMSMessage(
-        id: 'new_4',
-        sender: 'DHL',
-        message: 'Your package is waiting for delivery. Confirm payment here: http://dhl-secure-delivery.info',
-        timestamp: DateTime.now().subtract(Duration(hours: 2)),
-        riskScore: 91,
-        isQuarantined: true,
-        suspiciousElements: ['Empresa de envíos falsificada', 'Dominio falso: dhl-secure-delivery.info', 'Solicitud de pago sospechosa', 'Idioma inglés inconsistente'],
+      DetectionService.analyzeMessage(
+        'new_4',
+        'DHL',
+        'Your package is waiting for delivery. Confirm payment here: http://dhl-secure-delivery.info',
+        DateTime.now().subtract(Duration(hours: 2)),
       ),
 
-      SMSMessage(
-        id: 'new_5',
-        sender: 'BANCO BOGOTA',
-        message: 'Banco de Bogotá: detectamos un intento de acceso sospechoso. Revise en https://bogota-seguridad.com',
-        timestamp: DateTime.now().subtract(Duration(hours: 3)),
-        riskScore: 94,
-        isQuarantined: true,
-        suspiciousElements: ['Banco falsificado', 'Dominio falso: bogota-seguridad.com', 'Alarma de seguridad falsa', 'Phishing bancario detectado'],
+      DetectionService.analyzeMessage(
+        'new_5',
+        'BANCO BOGOTA',
+        'Banco de Bogotá: detectamos un intento de acceso sospechoso. Revise en https://bogota-seguridad.com',
+        DateTime.now().subtract(Duration(hours: 3)),
       ),
 
-      SMSMessage(
-        id: 'new_6',
-        sender: 'GIROS',
-        message: '¡Atención! Ha recibido un giro internacional, confirme su identidad en http://giros-seguro.org',
-        timestamp: DateTime.now().subtract(Duration(hours: 4)),
-        riskScore: 88,
-        isQuarantined: true,
-        suspiciousElements: ['Giro internacional falso', 'Dominio genérico: giros-seguro.org', 'Solicitud de identidad sospechosa', 'Urgencia artificial'],
+      DetectionService.analyzeMessage(
+        'new_6',
+        'GIROS',
+        '¡Atención! Ha recibido un giro internacional, confirme su identidad en http://giros-seguro.org',
+        DateTime.now().subtract(Duration(hours: 4)),
       ),
 
-      SMSMessage(
-        id: 'new_7',
-        sender: 'NETFLIX',
-        message: 'Netflix: su cuenta será suspendida hoy. Actualice su método de pago aquí: http://netflix-billing-update.net',
-        timestamp: DateTime.now().subtract(Duration(hours: 5)),
-        riskScore: 93,
-        isQuarantined: true,
-        suspiciousElements: ['Empresa tecnológica falsificada', 'Dominio falso: netflix-billing-update.net', 'Urgencia artificial: "hoy"', 'Solicitud de datos de pago'],
+      DetectionService.analyzeMessage(
+        'new_7',
+        'NETFLIX',
+        'Netflix: su cuenta será suspendida hoy. Actualice su método de pago aquí: http://netflix-billing-update.net',
+        DateTime.now().subtract(Duration(hours: 5)),
       ),
 
-      SMSMessage(
-        id: 'new_8',
-        sender: '+573009876543',
-        message: 'Estimado cliente, hemos notado actividad inusual en su tarjeta. Llame ahora al 01-800-123-4567.',
-        timestamp: DateTime.now().subtract(Duration(hours: 6)),
-        riskScore: 86,
-        isQuarantined: true,
-        suspiciousElements: ['Entidad bancaria genérica', 'Número genérico sospechoso', 'Urgencia artificial: "ahora"', 'Alarma de seguridad falsa'],
+      DetectionService.analyzeMessage(
+        'new_8',
+        '+573009876543',
+        'Estimado cliente, hemos notado actividad inusual en su tarjeta. Llame ahora al 01-800-123-4567.',
+        DateTime.now().subtract(Duration(hours: 6)),
       ),
 
-      SMSMessage(
-        id: 'new_9',
-        sender: 'APPLE',
-        message: 'Apple ID locked. Please verify immediately at http://appleid-support.net',
-        timestamp: DateTime.now().subtract(Duration(hours: 7)),
-        riskScore: 90,
-        isQuarantined: true,
-        suspiciousElements: ['Empresa tecnológica falsificada', 'Dominio falso: appleid-support.net', 'Urgencia artificial: "immediately"', 'Idioma inglés inconsistente'],
+      DetectionService.analyzeMessage(
+        'new_9',
+        'APPLE',
+        'Apple ID locked. Please verify immediately at http://appleid-support.net',
+        DateTime.now().subtract(Duration(hours: 7)),
       ),
 
-      SMSMessage(
-        id: 'new_10',
-        sender: 'DAVIVIENDA',
-        message: 'Tu cuenta Davivienda ha sido seleccionada para una actualización de seguridad. Ingresa a: http://davivienda-secure.com',
-        timestamp: DateTime.now().subtract(Duration(hours: 8)),
-        riskScore: 97,
-        isQuarantined: true,
-        suspiciousElements: ['Banco falsificado', 'Dominio falso: davivienda-secure.com', 'Actualización de seguridad falsa', 'Phishing bancario detectado'],
+      DetectionService.analyzeMessage(
+        'new_10',
+        'DAVIVIENDA',
+        'Tu cuenta Davivienda ha sido seleccionada para una actualización de seguridad. Ingresa a: http://davivienda-secure.com',
+        DateTime.now().subtract(Duration(hours: 8)),
       ),
     ];
     
     notifyListeners();
   }
 
-  /// ENVIAR RESPUESTA SMS (funcional para Android)
   Future<void> sendSMSResponse(String phoneNumber, String message) async {
     try {
       print('📱 Enviando SMS a $phoneNumber: $message');
-      // Aquí se integrará con el plugin de SMS para Android
-      // await SmsManager.sendTextMessage(phoneNumber, null, message, null, null);
-      
-      // Por ahora solo simular
       await Future.delayed(Duration(milliseconds: 500));
       print('✅ SMS enviado exitosamente');
     } catch (e) {
