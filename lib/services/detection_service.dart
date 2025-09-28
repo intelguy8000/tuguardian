@@ -35,68 +35,62 @@ class DetectionService {
     
     // CONTACTO SOSPECHOSO
     RegExp(r'contactame\s+por\s+ws|por\s+favor\s+contactame', caseSensitive: false),
-    RegExp(r'573\d{8}|32\d{8}', caseSensitive: false), // Números colombianos sospechosos
+    RegExp(r'573\d{8}|32\d{8}', caseSensitive: false),
     
     // ACCIONES URGENTES
     RegExp(r'click\s+here|haga?\s+clic|ingresa\s+ya|descarga\s+la\s+factura', caseSensitive: false),
     RegExp(r'complete?\s+para\s+el\s+envio|ponte?\s+al\s+dia', caseSensitive: false),
   ];
   
-  // DOMINIOS MALICIOSOS REALES DE TUS SMS
   static final List<String> _maliciousDomains = [
     'bit.ly', 'llihi.cc', 'mcpag.li', 'inter.la', 'ln.run',
     'bly-faclr.at', 'sit-onclr.de', 'pagdscttoocl.fi',
     'www3.interrapidisimo.com', 'blilylcr.fj',
   ];
   
-  // DOMINIOS LEGÍTIMOS (para evitar falsos positivos)
   static final List<String> _trustedDomains = [
     'sura.com', 'bancolombia.com', 'davivienda.com', 'bbva.co',
     'movistar.co', 'claro.com.co', 'tigo.com.co', 'etb.com.co',
     'google.com', 'apple.com', 'microsoft.com', 'amazon.com',
-    'interrapidisimo.com', // Real vs fake (www3.interrapidisimo.com)
+    'interrapidisimo.com',
   ];
   
-  // NÚMEROS LEGÍTIMOS (códigos cortos conocidos)
   static final List<String> _trustedSenders = [
-    '891888', '899888', // SURA
-    '85432', '85433', // Bancolombia
-    '787878', // Movistar  
-    '747474', // Claro
-    '636363', // Tigo
+    '891888', '899888',
+    '85432', '85433',
+    '787878',
+    '747474',
+    '636363',
   ];
   
-  // PALABRAS DE EMPRESAS FALSAS/SOSPECHOSAS
   static final List<String> _suspiciousCompanies = [
-    'INTERRAPIDISIMO', 'INTER RAPIDISIMO', // Vs real Interrapidísimo
+    'INTERRAPIDISIMO', 'INTER RAPIDISIMO',
     'PROGRAMA OPORTUNIDAD FAMILIAR',
     'OPORTUNIDAD FAMILIAR',
   ];
 
-  /// ANÁLISIS PRINCIPAL CON DETECCIÓN DE ENTIDADES OFICIALES
   static SMSMessage analyzeMessage(String id, String sender, String message, DateTime timestamp) {
     int riskScore = calculateRiskScore(message, sender);
     List<String> suspiciousElements = identifySuspiciousElements(message, sender);
-    bool shouldQuarantine = riskScore >= 75; // Más agresivo para proteger mejor
+    bool shouldQuarantine = riskScore >= 75;
     
-    // 🆕 NUEVA FUNCIONALIDAD: Detectar entidades oficiales mencionadas
-    List<OfficialEntity> detectedEntities = [];
-    List<OfficialContactSuggestion> officialSuggestions = [];
-    
-    // Solo para mensajes ROJOS (>=70) detectar entidades para sugerencias
-    if (riskScore >= 70) {
-      detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
-      
-      if (detectedEntities.isNotEmpty) {
-        officialSuggestions = OfficialEntitiesService.generateContactSuggestions(detectedEntities);
-        
-        // Agregar elemento sospechoso si suplanta entidades conocidas
-        suspiciousElements.add('Suplanta entidad conocida: ${detectedEntities.map((e) => e.name).join(', ')}');
-        
-        // Incrementar score por suplantación de identidad
-        riskScore = (riskScore + 10).clamp(0, 100);
-      }
+    // Detectar entidades oficiales mencionadas
+    List<OfficialEntity> detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
+    print('DEBUG: Mensaje: ${message.substring(0, message.length > 50 ? 50 : message.length)}...');
+    print('DEBUG: Entidades detectadas: ${detectedEntities.length}');
+    for (var entity in detectedEntities) {
+      print('DEBUG: - ${entity.name}');
     }
+
+    List<OfficialContactSuggestion> officialSuggestions = 
+        OfficialEntitiesService.generateContactSuggestions(detectedEntities);
+    print('DEBUG: Sugerencias generadas: ${officialSuggestions.length}');
+
+    if (detectedEntities.isNotEmpty && riskScore >= 70) {
+      suspiciousElements.add('Suplanta entidad conocida: ${detectedEntities.map((e) => e.name).join(', ')}');
+      riskScore = (riskScore + 10).clamp(0, 100);
+    }
+    
     return SMSMessage(
       id: id,
       sender: sender,
@@ -105,57 +99,45 @@ class DetectionService {
       riskScore: riskScore,
       isQuarantined: shouldQuarantine,
       suspiciousElements: suspiciousElements,
-      // 🆕 NUEVOS CAMPOS
       detectedEntities: detectedEntities,
       officialSuggestions: officialSuggestions,
     );
   }
   
-  /// CÁLCULO DE RIESGO MEJORADO
   static int calculateRiskScore(String message, String sender) {
     int score = 0;
     
-    // VERIFICAR REMITENTE CONFIABLE PRIMERO
     if (_isKnownTrustedSender(sender)) {
-      score -= 20; // Reducir riesgo para remitentes conocidos
+      score -= 20;
     }
     
-    // PATRONES SOSPECHOSOS (peso alto por datos reales)
     for (RegExp pattern in _suspiciousPatterns) {
       if (pattern.hasMatch(message)) {
-        score += 25; // Aumentado porque son patrones reales
+        score += 25;
       }
     }
     
-    // ANÁLISIS DE URLs (crítico)
     score += _analyzeUrlsEnhanced(message);
     
-    // EMPRESAS FALSAS
     for (String company in _suspiciousCompanies) {
       if (message.toUpperCase().contains(company)) {
-        score += 35; // Muy sospechoso
+        score += 35;
       }
     }
     
-    // COMBINACIÓN LETAL: DINERO + URGENCIA + ENLACE
     if (_containsMoneyKeywords(message) && 
         _containsUrgencyKeywords(message) && 
         _containsLinks(message)) {
-      score += 40; // Combinación de tus ejemplos reales
+      score += 40;
     }
     
-    // ANÁLISIS DEL REMITENTE
     score += _analyzeSenderEnhanced(sender);
-    
-    // PATRONES ESPECÍFICOS DE TUS EJEMPLOS
     score += _analyzeSpecificPatterns(message);
     
-    // MAYÚSCULAS EXCESIVAS (como en tus ejemplos)
     if (_hasExcessiveCapitals(message)) {
       score += 15;
     }
     
-    // NÚMEROS SOSPECHOSOS (como 43.859, 87.717)
     if (_containsSuspiciousNumbers(message)) {
       score += 20;
     }
@@ -163,23 +145,19 @@ class DetectionService {
     return score.clamp(0, 100);
   }
   
-  /// ANÁLISIS DE URLs MEJORADO
   static int _analyzeUrlsEnhanced(String message) {
     int urlScore = 0;
     
-    // Buscar dominios maliciosos conocidos
     for (String domain in _maliciousDomains) {
       if (message.toLowerCase().contains(domain)) {
-        urlScore += 45; // Muy alto para dominios conocidos maliciosos
+        urlScore += 45;
       }
     }
     
-    // URLs con patrones sospechosos de tus ejemplos
     if (RegExp(r'https?://[a-z0-9]+\.[a-z]{2,3}/[A-Za-z0-9]{6,}').hasMatch(message)) {
-      urlScore += 25; // URLs con códigos largos
+      urlScore += 25;
     }
     
-    // URLs con números al final (patrón de tus ejemplos)
     if (RegExp(r'https?://.*\d{5,}').hasMatch(message)) {
       urlScore += 20;
     }
@@ -187,16 +165,13 @@ class DetectionService {
     return urlScore;
   }
   
-  /// ANÁLISIS DE REMITENTE MEJORADO
   static int _analyzeSenderEnhanced(String sender) {
     int senderScore = 0;
     
-    // Números largos como en tus ejemplos (+573001234567)
     if (RegExp(r'^\+?57[0-9]{10}$').hasMatch(sender)) {
-      senderScore += 15; // Números colombianos largos sospechosos
+      senderScore += 15;
     }
     
-    // Códigos cortos desconocidos (no en lista confiable)
     if (RegExp(r'^\d{5,6}$').hasMatch(sender) && !_trustedSenders.contains(sender)) {
       senderScore += 25;
     }
@@ -204,57 +179,47 @@ class DetectionService {
     return senderScore;
   }
   
-  /// PATRONES ESPECÍFICOS DE TUS EJEMPLOS
   static int _analyzeSpecificPatterns(String message) {
     int score = 0;
     
-    // Patrón "JUAN" personalizado (muy común en smishing)
     if (RegExp(r'JUAN\s+(?:HOY|TU|DEUDA|FACTURA)', caseSensitive: false).hasMatch(message)) {
       score += 30;
     }
     
-    // Patrón de cantidades específicas de tus ejemplos
     if (RegExp(r'43\.859|87\.717').hasMatch(message)) {
-      score += 35; // Cantidades específicas de estafa
+      score += 35;
     }
     
-    // Códigos de envío falsos
     if (RegExp(r'\d{12,15}').hasMatch(message)) {
-      score += 15; // Códigos largos como 700127548075
+      score += 15;
     }
     
     return score;
   }
   
-  /// IDENTIFICAR ELEMENTOS SOSPECHOSOS ESPECÍFICOS
   static List<String> identifySuspiciousElements(String message, String sender) {
     List<String> elements = [];
     
-    // Verificar dominios maliciosos específicos
     for (String domain in _maliciousDomains) {
       if (message.toLowerCase().contains(domain)) {
         elements.add('Dominio malicioso conocido: $domain');
       }
     }
     
-    // Empresas falsas
     for (String company in _suspiciousCompanies) {
       if (message.toUpperCase().contains(company)) {
         elements.add('Empresa falsa detectada');
       }
     }
     
-    // Patrones de urgencia de tus ejemplos
     if (RegExp(r'HOY\s+VENCE|SUSPENDIDA?', caseSensitive: false).hasMatch(message)) {
       elements.add('Urgencia artificial detectada');
     }
     
-    // Cantidades sospechosas
     if (RegExp(r'43\.859|87\.717|300,000').hasMatch(message)) {
       elements.add('Cantidades típicas de estafa');
     }
     
-    // Personalización falsa
     if (RegExp(r'JUAN\s+(?:HOY|TU)', caseSensitive: false).hasMatch(message)) {
       elements.add('Personalización falsa detectada');
     }
@@ -262,7 +227,6 @@ class DetectionService {
     return elements;
   }
   
-  /// FUNCIONES AUXILIARES
   static bool _isKnownTrustedSender(String sender) {
     return _trustedSenders.contains(sender);
   }
@@ -297,7 +261,6 @@ class DetectionService {
   }
   
   static bool _containsSuspiciousNumbers(String message) {
-    // Números específicos de tus ejemplos de estafa
     List<String> suspiciousNumbers = ['43.859', '87.717', '300,000', '15,000.00'];
     return suspiciousNumbers.any((number) => message.contains(number));
   }
