@@ -98,10 +98,15 @@ class DetectionService {
       score -= 20;
     }
     
-    // NUEVO: Remitente texto (no numérico) + URL = MUY SOSPECHOSO
+    // NUEVO: Remitente texto (no numérico) + URL = REQUIERE VERIFICACIÓN
     if (!_isTrustedSender(sender) && !RegExp(r'^\d+$').hasMatch(sender) && _containsLinks(message)) {
       score += 35; // Remitente texto con URL es automáticamente sospechoso
-    }
+  
+    // Garantizar score mínimo para mostrar canales oficiales
+  if (score < 30) {
+    score = 30; // Score mínimo para activar widget de verificación
+  }
+}
     
     // NUEVO: Detectar dominios bancarios/empresariales falsos
     score += _detectFakeDomains(message);
