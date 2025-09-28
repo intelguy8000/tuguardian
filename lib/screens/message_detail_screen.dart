@@ -133,7 +133,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   const SizedBox(height: 20),
                   _buildIncomingMessage(isDark, isThreat, isVerification),
                   const SizedBox(height: 16),
-                  if (isThreat || hasCallToAction || isVerification) 
+                  if (isThreat || hasCallToAction || isVerification || widget.message.hasOfficialSuggestions) 
                     _buildTuGuardianResponse(isDark, isThreat, isVerification),
                   const SizedBox(height: 40),
                 ],
@@ -322,7 +322,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   ],
                   
                   // Widget de canales oficiales
-                  if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
+                  if (widget.message.hasOfficialSuggestions && (widget.message.isQuarantined || widget.message.isModerate)) ...[
                     const SizedBox(height: 12),
                     Container(
                       width: double.infinity,
