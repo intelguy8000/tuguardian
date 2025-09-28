@@ -13,8 +13,8 @@ class OfficialSuggestionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Solo mostrar para mensajes ROJOS con entidades detectadas
-    if (!smsMessage.isDangerous || !smsMessage.hasOfficialSuggestions) {
+    // Solo mostrar para mensajes BLOQUEADOS con entidades detectadas
+    if (!smsMessage.isQuarantined || !smsMessage.hasOfficialSuggestions) {
       return const SizedBox.shrink();
     }
 
@@ -85,7 +85,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
           const SizedBox(height: 16),
           
           // Lista de entidades con sus canales oficiales
-          ...smsMessage.officialSuggestions.map((suggestion) =>
+          ...smsMessage.officialSuggestions!.map((suggestion) =>
             _buildEntitySuggestion(context, suggestion)).toList(),
         ],
       ),
