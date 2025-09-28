@@ -59,7 +59,7 @@ class DetectionService {
     List<String> suspiciousElements = identifySuspiciousElements(message, sender);
     bool shouldQuarantine = riskScore >= 75;
     
-    List<OfficialEntity> detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
+    List<OfficialEntity> detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message + ' ' + sender);
     print('DEBUG: Mensaje: ${message.substring(0, message.length > 50 ? 50 : message.length)}...');
     print('DEBUG: Remitente: $sender (${_isTrustedSender(sender) ? "VERIFICADO" : "NO VERIFICADO"})');
     print('DEBUG: Entidades detectadas: ${detectedEntities.length}');

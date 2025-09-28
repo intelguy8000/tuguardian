@@ -14,7 +14,7 @@ class OfficialSuggestionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Solo mostrar para mensajes BLOQUEADOS con entidades detectadas
-    if (!smsMessage.isQuarantined || !smsMessage.hasOfficialSuggestions) {
+    if ((!smsMessage.isModerate && !smsMessage.isDangerous) || !smsMessage.hasOfficialSuggestions) {
       return const SizedBox.shrink();
     }
 
