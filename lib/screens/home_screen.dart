@@ -46,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
         elevation: 0,
         leading: Container(
-          width: 90,
           alignment: Alignment.centerLeft,
           margin: const EdgeInsets.only(left: 16),
           child: GestureDetector(
@@ -54,13 +53,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Text(
               'Editar',
               style: TextStyle(
-                color: AppColors.primaryTech, // Azul tecnológico
+                color: AppColors.primaryTech,
                 fontSize: 17,
                 fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ),
+      ),
+    ),
+  ),
+),
+leadingWidth: 80, // Agregar esta línea después del leading
         title: Text(
           'TuGuardian',
           style: TextStyle(
@@ -208,13 +208,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         
         // Barra de búsqueda inferior
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : Colors.grey.shade50,
-            border: Border(
-              top: BorderSide(
-                color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+        SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkCard : Colors.grey.shade50,
+              border: Border(
+                top: BorderSide(
+                  color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+                ),
               ),
             ),
           ),
@@ -311,13 +313,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Row(
           children: [
             // PUNTO AZUL ESTILO iOS - AL INICIO DE LA FILA (IZQUIERDA DEL AVATAR)
-            if (isUnread)
               Container(
                 width: 8,
                 height: 8,
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: isUnread ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
