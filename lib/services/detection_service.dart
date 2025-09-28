@@ -275,7 +275,7 @@ class DetectionService {
   }
   
   static bool _containsLinks(String message) {
-    return RegExp(r'https?://').hasMatch(message);
+  return RegExp(r'https?://|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}').hasMatch(message);
   }
   
   static bool _containsMoneyKeywords(String message) {
