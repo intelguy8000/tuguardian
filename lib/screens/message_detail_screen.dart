@@ -247,121 +247,105 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
 
   Widget _buildTuGuardianResponse(bool isDark, bool isThreat, bool isVerification) {
   final userIntent = _detectUserIntentLocal(widget.message.message);
-  // resto del código continúa...
     
-    String responseText;
-    if (isVerification) {
-      responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
-    } else if (isThreat) {
-      if (userIntent['detected']) {
-        responseText = 'Amenaza detectada. Te guiamos al sitio oficial seguro.';
-      } else {
-        responseText = 'Mensaje malicioso bloqueado. No interactúes con él.';
-      }
+  String responseText;
+  if (isVerification) {
+    responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
+  } else if (isThreat) {
+    if (userIntent['detected']) {
+      responseText = '⚠️ Mensaje falso detectado. Usa solo canales verificados:';
     } else {
-      responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
+      responseText = '⚠️ Mensaje falso detectado. No interactúes con él.';
     }
+  } else {
+    responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
+  }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        const Spacer(),
-        Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(18),
-                    topRight: Radius.circular(18),
-                    bottomLeft: Radius.circular(18),
-                    bottomRight: Radius.circular(4),
-                  ),
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      const Spacer(),
+      Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  topRight: Radius.circular(18),
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(4),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      responseText,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                      ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    responseText,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
                     ),
-                    
-                    if (userIntent['detected'] && !isVerification) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _redirectToOfficialSite(userIntent),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primary,
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 0,
+                  ),
+                  
+                  if (userIntent['detected'] && !isVerification) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _redirectToOfficialSite(userIntent),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primary,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text(
-                            userIntent['buttonText'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          elevation: 0,
                         ),
-                      ),
-                    ],
-                    
-                    // 🆕 WIDGET DE CANALES OFICIALES
-                    if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        child: OfficialSuggestionsWidget(smsMessage: widget.message),
-                      ),
-                    ],
-                    
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () => _showMoreOptions(isDark),
-                      child: Text(
-                        'Más opciones',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.white70,
+                        child: Text(
+                          userIntent['buttonText'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
                   ],
-                ),
+                  
+                  // Widget de canales oficiales
+                  if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      child: OfficialSuggestionsWidget(smsMessage: widget.message),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'TuGuardian • ${_formatTime(DateTime.now())}',
-                style: TextStyle(
-                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
-                  fontSize: 11,
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'TuGuardian • ${_formatTime(DateTime.now())}',
+              style: TextStyle(
+                color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
+                fontSize: 11,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
-    );
-  }
-
+      ),
+    ],
+  );
+}
   Widget _buildReplyField(bool isDark, bool isThreat) {
     final canReply = !isThreat || _isUnlocked;
     
