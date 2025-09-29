@@ -253,7 +253,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
     if (isVerification) {
       responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
     } else if (isThreat) {
-      responseText = 'Mensaje falso detectado. Usa solo canales verificados:';
+      responseText = 'Mensaje falso detectado. Usa solo canales verificados.';
     } else {
       responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
     }
