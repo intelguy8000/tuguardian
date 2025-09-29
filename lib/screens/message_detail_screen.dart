@@ -251,11 +251,11 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   Widget _buildTuGuardianResponse(bool isDark, bool isThreat, bool isVerification) {
     String responseText;
     if (isVerification) {
-      responseText = 'Parece verificación legítima de tu banco. Si reconoces la transacción, responde normalmente.';
+      responseText = 'Parece verificación legítima. Si reconoces la transacción, responde normalmente.';
     } else if (isThreat) {
-      responseText = 'Mensaje falso detectado. Usa solo canales verificados.';
+      responseText = 'Mensaje falso detectado. Usa solo canales oficiales verificados.';
     } else {
-      responseText = 'Verificación recomendada. Usa siempre enlaces oficiales.';
+      responseText = 'Verificación recomendada. Usa enlaces oficiales.';
     }
 
     return Row(
@@ -284,15 +284,21 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.warning, color: Colors.white, size: 16),
+                        Icon(Icons.warning, color: Colors.white, size: 18),
                         const SizedBox(width: 8),
-                        Text(
-                          responseText,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
+                        Expanded(
+                          child: Text(
+                            responseText,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.visible,
                           ),
                         ),
                       ],
