@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/theme_provider.dart';
 import '../providers/sms_provider.dart';
 import '../models/sms_message.dart';
 import '../core/app_colors.dart';
-import '../widgets/official_suggestions_widget.dart';
+import '../services/official_entities_service.dart';
 
 class MessageDetailScreen extends StatefulWidget {
   final SMSMessage message;
@@ -135,9 +136,6 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   const SizedBox(height: 16),
                   if (isThreat || hasCallToAction || isVerification) 
                     _buildTuGuardianResponse(isDark, isThreat, isVerification),
-                  const SizedBox(height: 16),
-                  // Widget de canales oficiales SEPARADO del mensaje de TuGuardian
-                  OfficialSuggestionsWidget(smsMessage: widget.message),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -146,6 +144,215 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
 
           // Campo de respuesta estilo iOS
           _buildReplyField(isDark, isThreat),
+        ],
+      ),
+    );
+  }
+  List<Widget> _buildIntegratedOfficialChannels() {
+    List<Widget> widgets = [];
+    
+    for (var suggestion in widget.message.officialSuggestions ?? []) {
+      // Nombre de la entidad
+      widgets.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.business, color: Colors.white, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                suggestion.entityName,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'VERIFICADO',
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      
+      widgets.add(const SizedBox(height: 8));
+      
+      // Botones de canales
+      List<Widget> buttons = [];
+      for (var channel in suggestion.channels) {
+        switch (channel.type) {
+          case ContactChannelType.whatsapp:
+            buttons.add(
+              Expanded(
+                child: _buildIntegratedChannelButton(
+                  icon: Icons.chat,
+                  label: 'WhatsApp',
+                  color: const Color(0xFF25D366),
+                  onTap: () => _openWhatsApp(context, channel.action, suggestion.entityName),
+                ),
+              ),
+            );
+            break;
+          case ContactChannelType.website:
+            buttons.add(
+              Expanded(
+                child: _buildIntegratedChannelButton(
+                  icon: Icons.language,
+                  label: 'Web',
+                  color: Colors.white.withOpacity(0.9),
+                  onTap: () => _openWebsite(context, channel.action, suggestion.entityName),
+                ),
+              ),
+            );
+            break;
+          case ContactChannelType.app:
+            buttons.add(
+              Expanded(
+                child: _buildIntegratedChannelButton(
+                  icon: Icons.phone_android,
+                  label: 'App',
+                  color: const Color(0xFF8E24AA),
+                  onTap: () => _showAppSuggestion(context, suggestion.entityName),
+                ),
+              ),
+            );
+            break;
+        }
+        
+        if (buttons.length < suggestion.channels.length) {
+          buttons.add(const SizedBox(width: 6));
+        }
+      }
+      
+      widgets.add(
+        Row(children: buttons),
+      );
+    }
+    
+    return widgets;
+  }
+
+  Widget _buildIntegratedChannelButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color == Colors.white.withOpacity(0.9) ? AppColors.primary : Colors.white, size: 14),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color == Colors.white.withOpacity(0.9) ? AppColors.primary : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openWhatsApp(BuildContext context, String whatsappUrl, String entityName) async {
+    try {
+      final Uri url = Uri.parse(whatsappUrl);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ Abriendo WhatsApp oficial de $entityName'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _openWebsite(BuildContext context, String websiteUrl, String entityName) async {
+    try {
+      final Uri url = Uri.parse(websiteUrl);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🌐 Abriendo página oficial de $entityName'),
+              backgroundColor: AppColors.primary,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showAppSuggestion(BuildContext context, String entityName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('App Oficial de $entityName'),
+        content: Text('Para mayor seguridad, consulta en la app oficial de $entityName.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido'),
+          ),
         ],
       ),
     );
@@ -304,19 +511,11 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                       ],
                     ),
                     
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () => _showMoreOptions(isDark),
-                      child: Text(
-                        'Más opciones',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.white70,
-                        ),
-                      ),
-                    ),
+                    // Integrar widget de canales oficiales DENTRO del mensaje
+                    if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
+                      const SizedBox(height: 12),
+                      ..._buildIntegratedOfficialChannels(),
+                    ],
                   ],
                 ),
               ),
