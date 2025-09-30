@@ -10,30 +10,36 @@ dependencies:
   flutter:
     sdk: flutter
   
-  # SMS y permisos
+  # SMS y permisos - ESENCIALES
   telephony: ^0.2.0
   permission_handler: ^11.0.1
   
-  # Estado y navegación
-  provider: ^6.0.5
+  # Notificaciones - CRÍTICO PARA ALERTAS
+  # flutter_local_notifications: ^16.3.3
   
-  # Base de datos local
+  # Background tasks - CRÍTICO PARA LISTENER
+  # workmanager: ^0.5.1
+  
+  # Estado y navegación
+  provider: ^6.1.2
+  
+  # Base de datos local - ESENCIAL
   sqflite: ^2.3.0
   path: ^1.8.3
   
-  # Utilidades
+  # Utilidades - ÚTILES
   shared_preferences: ^2.2.2
   http: ^1.1.0
   url_launcher: ^6.2.1
   intl: ^0.18.1
   
   # UI
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
