@@ -19,13 +19,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String _selectedFilter = 'Todos';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  // Simular mensajes leídos/no leídos
   Set<String> _readMessages = <String>{};
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this); // Solo SMS y CHAT
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -140,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildSMSTab(bool isDark) {
     return Column(
       children: [
-        // Filtros horizontales
+        // Filtros horizontales - CORREGIDOS
         Container(
           height: 50,
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -150,18 +149,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               _buildFilterChip('Todos', isDark),
               const SizedBox(width: 8),
-              _buildFilterChip('Mensajes', isDark),
+              _buildFilterChip('🎭 Demo', isDark),
               const SizedBox(width: 8),
-              _buildFilterChip('Amenazas', isDark),
+              _buildFilterChip('🔴 Real', isDark),
+              const SizedBox(width: 8),
+              _buildFilterChip('Peligrosos', isDark),
               const SizedBox(width: 8),
               _buildFilterChip('Seguros', isDark),
-              const SizedBox(width: 8),
-              _buildFilterChip('Spam', isDark),
             ],
           ),
         ),
         
-        // Lista de mensajes estilo iOS Messages
         Expanded(
           child: Consumer<SMSProvider>(
             builder: (context, smsProvider, child) {
@@ -207,7 +205,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         
-        // Barra de búsqueda inferior
         SafeArea(
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -266,15 +263,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   child: IconButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Composer próximamente'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                      final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+                      smsProvider.simulateThreatSMS(context);
                     },
                     icon: const Icon(
-                      Icons.edit,
+                      Icons.warning,
                       color: Colors.white,
                     ),
                   ),
@@ -288,7 +281,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildMessageRow(SMSMessage message, bool isDark) {
-    final isThreat = message.riskScore >= 70;
+    // CORREGIDO: Umbral correcto para amenazas
+    final isThreat = message.riskScore >= 40; // Cambio crítico
     final isUnread = !_readMessages.contains(message.id);
     
     return GestureDetector(
@@ -309,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            // PUNTO AZUL ESTILO iOS - ESPACIO FIJO PARA MANTENER ALINEACIÓN
+            // Punto azul iOS
             Container(
               width: 8,
               height: 8,
@@ -320,35 +314,84 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             
-            // Avatar circular
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(25),
-                border: isThreat ? Border.all(
-                  color: Colors.red,
-                  width: 2,
-                ) : null,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 24,
+            // Avatar con borde rojo si es amenaza
+            Stack(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    borderRadius: BorderRadius.circular(25),
+                    border: isThreat ? Border.all(
+                      color: Colors.red,
+                      width: 3, // Más grueso
+                    ) : null,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
                 ),
-              ),
+                // Badge DEMO/REAL en la esquina
+                if (message.isDemo || message.riskScore >= 40)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: message.isDemo ? Colors.purple : Colors.red,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Center(
+                        child: Text(
+                          message.isDemo ? 'D' : '!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 12),
             
-            // Contenido del mensaje
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
+                      // Badge DEMO/REAL
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: message.isDemo ? Colors.purple[50] : Colors.red[50],
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: message.isDemo ? Colors.purple : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          message.badge,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: message.isDemo ? Colors.purple[800] : Colors.red[800],
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           message.sender,
@@ -360,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       Text(
-                        _formatTime(message.timestamp),
+                        message.timeAgo,
                         style: TextStyle(
                           color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                           fontSize: 12,
@@ -429,23 +472,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontSize: 16,
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-            ),
-            child: Text(
-              'Estilo Wickr Me - En desarrollo',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -486,21 +512,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // CORREGIDO: Filtros con umbrales correctos
   List<SMSMessage> _getFilteredMessages(List<SMSMessage> messages) {
     List<SMSMessage> filtered = messages;
 
     switch (_selectedFilter) {
-      case 'Amenazas':
-        filtered = filtered.where((m) => m.riskScore >= 70).toList();
+      case '🎭 Demo':
+        filtered = filtered.where((m) => m.isDemo).toList();
+        break;
+      case '🔴 Real':
+        filtered = filtered.where((m) => !m.isDemo).toList();
+        break;
+      case 'Peligrosos':
+        filtered = filtered.where((m) => m.riskScore >= 40).toList(); // CORREGIDO
         break;
       case 'Seguros':
-        filtered = filtered.where((m) => m.riskScore < 30).toList();
-        break;
-      case 'Spam':
-        filtered = filtered.where((m) => m.riskScore >= 50 && m.riskScore < 70).toList();
-        break;
-      case 'Mensajes':
-        filtered = filtered.where((m) => m.riskScore < 50).toList();
+        filtered = filtered.where((m) => m.riskScore < 40).toList(); // CORREGIDO
         break;
     }
 
@@ -511,207 +538,5 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     return filtered;
-  }
-
-  Color _getRiskColor(int riskScore) {
-    if (riskScore >= 70) return Colors.red;
-    if (riskScore >= 50) return Colors.orange;
-    if (riskScore >= 30) return Colors.yellow.shade700;
-    return Colors.green;
-  }
-
-  String _formatTime(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'Ahora';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return '${timestamp.day}/${timestamp.month}';
-    }
-  }
-
-  void _showThreatInterceptor(SMSMessage message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.shade100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.shield,
-                color: Colors.red,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'TuGuardian te protege',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: const Text(
-                '🚨 Hemos bloqueado este link sospechoso',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Detectamos que este mensaje contiene:',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...message.suspiciousElements.map((element) => Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• ', style: TextStyle(color: Colors.red, fontSize: 16)),
-                  Expanded(
-                    child: Text(
-                      element,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.security, color: Colors.green, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Te guiamos al sitio oficial',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _getSafeGuidance(message.sender),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Ignorar mensaje',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showSafeGuidance(message.sender);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Ir al sitio oficial',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getSafeGuidance(String sender) {
-    if (sender.contains('CLARO') || sender.contains('Claro')) {
-      return 'Para revisar tu factura Claro de forma segura, te llevamos al portal oficial mi.claro.com.co';
-    }
-    if (sender.contains('banco') || sender.contains('Banco')) {
-      return 'Para verificar tu cuenta bancaria, utiliza la app oficial de tu banco o visita una sucursal';
-    }
-    if (sender.contains('INTER') || sender.toLowerCase().contains('rapidisimo')) {
-      return 'Para rastrear envíos de Interrápidísimo, visita su sitio oficial interrapidisimo.com';
-    }
-    return 'Te ayudamos a contactar la empresa por canales oficiales y seguros';
-  }
-
-  void _showSafeGuidance(String sender) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Redirigiendo al sitio oficial seguro...'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'OK',
-          textColor: Colors.white,
-          onPressed: () {},
-        ),
-      ),
-    );
   }
 }

@@ -11,6 +11,7 @@ class SMSMessage {
   final List<String> suspiciousElements;
   final List<OfficialEntity>? detectedEntities;
   final List<OfficialContactSuggestion>? officialSuggestions;
+  final bool isDemo; // NUEVO - Para sistema dual
   
   SMSMessage({
     required this.id,
@@ -22,12 +23,30 @@ class SMSMessage {
     this.suspiciousElements = const [],
     this.detectedEntities,
     this.officialSuggestions,
+    this.isDemo = false, // NUEVO - Por defecto es REAL
   });
   
   // Getters para clasificación de riesgo
-  bool get isSafe => riskScore < 30;
+  bool get isSafe => riskScore < 40;
   bool get isModerate => riskScore >= 30 && riskScore < 70;
   bool get isDangerous => riskScore >= 70;
+  
+  // NUEVO - Badge para UI
+  String get badge => isDemo ? '🎭 DEMO' : '🔴 REAL';
+  
+  // NUEVO - Tiempo relativo
+  String get timeAgo {
+    if (isDemo) return 'Ejemplo';
+    
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 1) return 'Ahora';
+    if (difference.inMinutes < 60) return 'Hace ${difference.inMinutes}min';
+    if (difference.inHours < 24) return 'Hace ${difference.inHours}h';
+    if (difference.inDays < 7) return 'Hace ${difference.inDays}d';
+    return 'Hace más de una semana';
+  }
   
   // ¿Tiene sugerencias oficiales disponibles?
   bool get hasOfficialSuggestions => 
@@ -128,6 +147,7 @@ class SMSMessage {
     List<String>? suspiciousElements,
     List<OfficialEntity>? detectedEntities,
     List<OfficialContactSuggestion>? officialSuggestions,
+    bool? isDemo, // NUEVO
   }) {
     return SMSMessage(
       id: id ?? this.id,
@@ -139,10 +159,11 @@ class SMSMessage {
       suspiciousElements: suspiciousElements ?? this.suspiciousElements,
       detectedEntities: detectedEntities ?? this.detectedEntities,
       officialSuggestions: officialSuggestions ?? this.officialSuggestions,
+      isDemo: isDemo ?? this.isDemo, // NUEVO
     );
   }
   
-  // Conversión a Map para base de datos
+  // Conversión a Map para base de datos - ACTUALIZADO
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -154,10 +175,11 @@ class SMSMessage {
       'suspiciousElements': suspiciousElements.join('|'),
       'detectedEntities': detectedEntities?.map((e) => e.name).join('|') ?? '',
       'hasOfficialSuggestions': hasOfficialSuggestions ? 1 : 0,
+      'isDemo': isDemo ? 1 : 0, // NUEVO
     };
   }
   
-  // Crear desde Map (para base de datos)
+  // Crear desde Map (para base de datos) - ACTUALIZADO
   factory SMSMessage.fromMap(Map<String, dynamic> map) {
     return SMSMessage(
       id: map['id'] ?? '',
@@ -167,12 +189,13 @@ class SMSMessage {
       riskScore: map['riskScore'] ?? 0,
       isQuarantined: (map['isQuarantined'] ?? 0) == 1,
       suspiciousElements: (map['suspiciousElements'] ?? '').split('|').where((e) => e.isNotEmpty).toList(),
+      isDemo: (map['isDemo'] ?? 0) == 1, // NUEVO
     );
   }
   
   @override
   String toString() {
-    return 'SMSMessage(id: $id, sender: $sender, riskScore: $riskScore, entities: $entityNames)';
+    return 'SMSMessage(id: $id, sender: $sender, riskScore: $riskScore, entities: $entityNames, isDemo: $isDemo)';
   }
   
   @override

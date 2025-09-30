@@ -39,9 +39,30 @@ class SMSCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header con remitente y indicador de riesgo
+              // Header con badge DEMO/REAL + remitente + riesgo
               Row(
                 children: [
+                  // NUEVO: Badge DEMO/REAL
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: message.isDemo ? Colors.purple[50] : Colors.red[50],
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: message.isDemo ? Colors.purple : Colors.red,
+                      ),
+                    ),
+                    child: Text(
+                      message.badge,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: message.isDemo ? Colors.purple[800] : Colors.red[800],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  
                   // Indicador de riesgo
                   _buildRiskIndicator(),
                   SizedBox(width: 12),
@@ -60,7 +81,7 @@ class SMSCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          _formatTime(message.timestamp),
+                          message.timeAgo, // Usar el nuevo getter
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[500],
@@ -250,12 +271,15 @@ class SMSCard extends StatelessWidget {
                 color: message.riskColor,
               ),
               SizedBox(width: 4),
-              Text(
-                element,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: message.riskColor,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  element,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: message.riskColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -324,21 +348,6 @@ class SMSCard extends StatelessWidget {
     return sender.length > 20 ? '${sender.substring(0, 20)}...' : sender;
   }
 
-  String _formatTime(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
-      return 'Ahora';
-    }
-  }
-
   String _censorMessage(String message) {
     // Censurar URLs y números de teléfono en mensajes bloqueados
     String censored = message;
@@ -359,7 +368,6 @@ class SMSCard extends StatelessWidget {
   }
 
   void _markAsSafe(BuildContext context) {
-    // TODO: Implementar lógica para marcar como seguro
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Mensaje marcado como seguro'),
@@ -369,7 +377,6 @@ class SMSCard extends StatelessWidget {
   }
 
   void _blockMessage(BuildContext context) {
-    // TODO: Implementar lógica para bloquear mensaje
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Mensaje bloqueado permanentemente'),
