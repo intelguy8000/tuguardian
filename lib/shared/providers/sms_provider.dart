@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/sms_message.dart';
-import '../services/detection_service.dart';
-import '../services/sms_listener_service.dart';
-import '../services/database_service.dart';
+import '../../services/detection_service.dart';
+import '../../services/sms_listener_service.dart';
+import '../../services/database_service.dart';
 
 class SMSProvider with ChangeNotifier {
   // LISTAS SEPARADAS
@@ -73,6 +73,28 @@ class SMSProvider with ChangeNotifier {
 
   SMSProvider() {
     _loadDemoMessages();
+    _autoEnableRealMode(); // Auto-enable real-time protection
+  }
+
+  /// Auto-enable real mode on app start
+  Future<void> _autoEnableRealMode() async {
+    // Wait a bit for the app to initialize
+    await Future.delayed(Duration(milliseconds: 500));
+
+    try {
+      bool hasPermissions = await _listenerService.hasPermissions();
+
+      if (hasPermissions) {
+        // If permissions already granted, enable silently
+        await enableRealMode();
+      } else {
+        // Mark that we need to request permissions
+        _isRealModeEnabled = false;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('⚠️ Auto-enable failed: $e');
+    }
   }
 
   /// ACTIVAR MODO REAL
@@ -408,6 +430,20 @@ class SMSProvider with ChangeNotifier {
         'new_10',
         'DAVIVIENDA',
         'Tu cuenta Davivienda ha sido seleccionada para una actualización de seguridad. Ingresa a: http://davivienda-secure.com',
+        DateTime.now().subtract(Duration(days: 30)),
+      ).copyWith(isDemo: true),
+
+      DetectionService.analyzeMessage(
+        'new_11',
+        'BOFA',
+        'Bank of America: Suspicious activity detected on your account. Verify immediately at http://bofa-security.net',
+        DateTime.now().subtract(Duration(days: 30)),
+      ).copyWith(isDemo: true),
+
+      DetectionService.analyzeMessage(
+        'new_12',
+        '+15551234567',
+        'URGENT: Your Bank of America account has been locked. Click here to unlock: http://bankofamerica-verify.com',
         DateTime.now().subtract(Duration(days: 30)),
       ).copyWith(isDemo: true),
     ];

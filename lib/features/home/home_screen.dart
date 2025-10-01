@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/sms_provider.dart';
-import '../providers/theme_provider.dart';
-import '../models/sms_message.dart';
-import '../core/app_colors.dart';
-import 'settings_screen.dart';
-import 'message_detail_screen.dart';
+import '../../shared/providers/sms_provider.dart';
+import '../../shared/providers/theme_provider.dart';
+import '../../shared/models/sms_message.dart';
+import '../../core/app_colors.dart';
+import '../settings/settings_screen.dart';
+import '../message_detail/message_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

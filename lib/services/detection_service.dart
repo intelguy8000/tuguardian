@@ -1,5 +1,6 @@
-import '../models/sms_message.dart';
-import 'official_entities_service.dart';
+import '../shared/models/sms_message.dart';
+import '../detection/entities/official_entities_service.dart';
+import 'intent_detection_service.dart';
 
 class DetectionService {
   // PATRONES BASADOS EN TUS SMS REALES
@@ -173,24 +174,48 @@ class DetectionService {
     return false;
   }
 
-  /// ANÁLISIS PRINCIPAL CON TUS DATOS REALES
+  /// ANÁLISIS PRINCIPAL CON TUS DATOS REALES + INTENT DETECTION
   static SMSMessage analyzeMessage(String id, String sender, String message, DateTime timestamp) {
-    int riskScore = calculateRiskScore(message, sender);
+    // 1. INTENT ANALYSIS (nuevo sistema)
+    IntentAnalysisResult intentAnalysis = IntentDetectionService.analyzeIntent(message, sender);
+
+    // 2. PATTERN-BASED RISK SCORE (sistema existente)
+    int baseRiskScore = calculateRiskScore(message, sender);
+
+    // 3. BOOST SCORE BASED ON INTENT
+    int finalRiskScore = (baseRiskScore + intentAnalysis.intentRiskBoost).clamp(0, 100);
+
+    // 4. IDENTIFY SUSPICIOUS ELEMENTS
     List<String> suspiciousElements = identifySuspiciousElements(message, sender);
-    bool shouldQuarantine = riskScore >= 75;
-    
-    // Detectar entidades para el modelo
+
+    // Add intent-based guidance to suspicious elements
+    if (intentAnalysis.isHighRisk) {
+      suspiciousElements.insert(0, intentAnalysis.userGuidance);
+    }
+
+    // 5. QUARANTINE DECISION
+    bool shouldQuarantine = finalRiskScore >= 75 || intentAnalysis.shouldBlockLinks;
+
+    // 6. DETECT ENTITIES
     var detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
-    
+
+    // 7. GENERATE OFFICIAL SUGGESTIONS IF NEEDED
+    List<OfficialContactSuggestion>? officialSuggestions;
+    if (detectedEntities.isNotEmpty && intentAnalysis.shouldBlockLinks) {
+      officialSuggestions = OfficialEntitiesService.generateContactSuggestions(detectedEntities);
+    }
+
     return SMSMessage(
       id: id,
       sender: sender,
       message: message,
       timestamp: timestamp,
-      riskScore: riskScore,
+      riskScore: finalRiskScore,
       isQuarantined: shouldQuarantine,
       suspiciousElements: suspiciousElements,
       detectedEntities: detectedEntities.isNotEmpty ? detectedEntities : null,
+      officialSuggestions: officialSuggestions,
+      intentAnalysis: intentAnalysis,
     );
   }
   

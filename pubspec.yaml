@@ -15,7 +15,7 @@ dependencies:
   permission_handler: ^11.0.1
   
   # Notificaciones - CRÍTICO PARA ALERTAS
-  # flutter_local_notifications: ^16.3.3
+  flutter_local_notifications: ^17.2.3
   
   # Background tasks - CRÍTICO PARA LISTENER
   # workmanager: ^0.5.1

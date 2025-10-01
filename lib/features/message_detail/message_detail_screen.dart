@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../providers/theme_provider.dart';
-import '../providers/sms_provider.dart';
-import '../models/sms_message.dart';
-import '../core/app_colors.dart';
-import '../services/official_entities_service.dart';
+import '../../shared/providers/theme_provider.dart';
+import '../../shared/providers/sms_provider.dart';
+import '../../shared/models/sms_message.dart';
+import '../../core/app_colors.dart';
+import '../../detection/entities/official_entities_service.dart';
 
 class MessageDetailScreen extends StatefulWidget {
   final SMSMessage message;
@@ -457,7 +457,13 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
 
   Widget _buildTuGuardianResponse(bool isDark, bool isThreat, bool isVerification) {
     String responseText;
-    if (isVerification) {
+    String? intentSummary;
+
+    // Use intent analysis if available
+    if (widget.message.intentAnalysis != null) {
+      responseText = widget.message.intentAnalysis!.userGuidance;
+      intentSummary = widget.message.intentAnalysis!.intentSummary;
+    } else if (isVerification) {
       responseText = 'Parece verificación legítima. Si reconoces la transacción, responde normalmente.';
     } else if (isThreat) {
       responseText = 'Amenaza detectada. Usa solo canales oficiales verificados.';
@@ -490,10 +496,30 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Intent badge if available
+                    if (intentSummary != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          intentSummary,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.warning, color: Colors.white, size: 18),
+                        Icon(Icons.shield, color: Colors.white, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -504,13 +530,12 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                               fontWeight: FontWeight.w500,
                               height: 1.4,
                             ),
-                            maxLines: 3,
                             overflow: TextOverflow.visible,
                           ),
                         ),
                       ],
                     ),
-                    
+
                     // Integrar widget de canales oficiales DENTRO del mensaje
                     if (widget.message.isQuarantined && widget.message.hasOfficialSuggestions) ...[
                       const SizedBox(height: 12),

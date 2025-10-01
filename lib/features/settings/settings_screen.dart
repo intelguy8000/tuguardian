@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
-import '../core/app_colors.dart';
+import '../../shared/providers/theme_provider.dart';
+import '../../shared/providers/sms_provider.dart';
+import '../../core/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,16 +13,17 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _realTimeProtection = true;
   bool _autoBlock = false;
   bool _biometricLock = false;
   double _sensitivityLevel = 0.8;
   String _selectedLanguage = 'Español';
   bool _shareAnonymousData = false;
+  bool _isLoadingRealMode = false;
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final smsProvider = Provider.of<SMSProvider>(context);
     final isDark = themeProvider.isDarkMode;
     
     return Scaffold(
@@ -58,13 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingsCard(
               isDark,
               children: [
-                _buildSwitchTile(
-                  'Protección en tiempo real',
-                  'Analiza mensajes automáticamente',
-                  _realTimeProtection,
-                  (value) => setState(() => _realTimeProtection = value),
-                  isDark,
-                ),
+                _buildRealModeSwitch(smsProvider, isDark),
                 _buildDivider(isDark),
                 _buildSwitchTile(
                   'Bloqueo automático',
@@ -190,6 +186,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRealModeSwitch(SMSProvider smsProvider, bool isDark) {
+    return ListTile(
+      title: Text(
+        'Protección en tiempo real',
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        smsProvider.isRealModeEnabled
+          ? '✅ Activa - ${smsProvider.allMessages.length} mensajes analizados'
+          : '⚙️ Inicializando...',
+        style: TextStyle(
+          color: smsProvider.isRealModeEnabled
+              ? Colors.green
+              : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: smsProvider.isRealModeEnabled
+        ? Icon(
+            Icons.shield_outlined,
+            color: Colors.green,
+            size: 28,
+          )
+        : SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+          ),
+      onTap: smsProvider.isRealModeEnabled
+          ? null
+          : () async {
+              // If not enabled yet, try to enable on tap
+              setState(() => _isLoadingRealMode = true);
+              try {
+                await smsProvider.enableRealMode();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('✅ Protección activada. ${smsProvider.allMessages.length} mensajes cargados.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('❌ Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } finally {
+                if (mounted) {
+                  setState(() => _isLoadingRealMode = false);
+                }
+              }
+            },
     );
   }
 

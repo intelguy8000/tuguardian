@@ -1,7 +1,56 @@
 import 'package:telephony/telephony.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'detection_service.dart';
-import '../models/sms_message.dart';
+import 'notification_service.dart';
+import 'database_service.dart';
+import '../shared/models/sms_message.dart';
+
+/// Background message handler (must be top-level function with @pragma annotation)
+@pragma('vm:entry-point')
+void backgroundMessageHandler(SmsMessage message) async {
+  try {
+    print('📩 [BACKGROUND] SMS recibido:');
+    print('   De: ${message.address}');
+    print('   Mensaje: ${message.body?.substring(0, 50) ?? ''}...');
+
+    // Analyze message
+    SMSMessage analyzed = DetectionService.analyzeMessage(
+      message.id.toString(),
+      message.address ?? 'Desconocido',
+      message.body ?? '',
+      DateTime.fromMillisecondsSinceEpoch(
+        message.date ?? DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+
+    print('   Score: ${analyzed.riskScore}');
+    print('   Peligroso: ${analyzed.isDangerous}');
+
+    // Initialize notification service
+    await NotificationService.initialize();
+
+    // Show appropriate notification
+    if (analyzed.isDangerous) {
+      await NotificationService.showDangerAlert(analyzed);
+      print('🚨 [BACKGROUND] Alerta de amenaza enviada');
+    } else if (analyzed.isSafe || analyzed.isModerate) {
+      await NotificationService.showSafeMessageGrouped();
+      print('✅ [BACKGROUND] Notificación agrupada actualizada');
+    }
+
+    // Save to database
+    try {
+      final db = DatabaseService.instance;
+      await db.insertMessage(analyzed);
+      print('💾 [BACKGROUND] Mensaje guardado en DB');
+    } catch (e) {
+      print('⚠️ [BACKGROUND] No se pudo guardar en DB: $e');
+    }
+
+  } catch (e) {
+    print('❌ [BACKGROUND] Error: $e');
+  }
+}
 
 class SMSListenerService {
   final Telephony telephony = Telephony.instance;
@@ -39,14 +88,22 @@ class SMSListenerService {
   Future<void> startListening() async {
     try {
       bool? hasPermission = await telephony.requestSmsPermissions;
-      
+
       if (hasPermission != null && hasPermission) {
+        // Initialize notification service first
+        await NotificationService.initialize();
+        await NotificationService.requestPermissions();
+
+        // Enable BACKGROUND listening with proper handler
         telephony.listenIncomingSms(
           onNewMessage: _handleIncomingSMS,
-          listenInBackground: true,
+          onBackgroundMessage: backgroundMessageHandler,
+          listenInBackground: true, // ✅ ACTIVADO - Detecta con app cerrada
         );
-        
-        print('✅ SMS Listener activado - Escuchando mensajes...');
+
+        print('✅ SMS Listener activado - MODO BACKGROUND');
+        print('   📱 Detecta SMS con app abierta');
+        print('   🔔 Detecta SMS con app cerrada (notificaciones)');
       } else {
         print('❌ No se pudo activar listener - Permisos insuficientes');
       }
@@ -56,24 +113,32 @@ class SMSListenerService {
     }
   }
   
-  void _handleIncomingSMS(SmsMessage message) {
+  void _handleIncomingSMS(SmsMessage message) async {
     try {
-      print('📩 SMS recibido:');
+      print('📩 [FOREGROUND] SMS recibido:');
       print('   De: ${message.address}');
       print('   Mensaje: ${message.body?.substring(0, 50)}...');
-      
+
       SMSMessage analyzed = DetectionService.analyzeMessage(
         message.id.toString(),
         message.address ?? 'Desconocido',
         message.body ?? '',
         DateTime.fromMillisecondsSinceEpoch(message.date ?? DateTime.now().millisecondsSinceEpoch),
       );
-      
+
       print('   Score: ${analyzed.riskScore}');
       print('   Peligroso: ${analyzed.isDangerous}');
-      
+
+      // Show notification (foreground also gets notifications)
+      if (analyzed.isDangerous) {
+        await NotificationService.showDangerAlert(analyzed);
+      } else if (analyzed.isSafe || analyzed.isModerate) {
+        await NotificationService.showSafeMessageGrouped();
+      }
+
+      // Update UI through callback
       onMessageReceived?.call(analyzed);
-      
+
     } catch (e) {
       print('❌ Error procesando SMS: $e');
     }

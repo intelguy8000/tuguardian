@@ -1,0 +1,109 @@
+/// TuGuardian Detection Engine
+///
+/// Sistema unificado de detección de smishing que analiza mensajes SMS
+/// y determina su nivel de riesgo basado en intenciones, patrones y entidades.
+///
+/// Arquitectura:
+/// - patterns/: Patrones de detección (español/inglés)
+/// - entities/: Base de datos de entidades oficiales
+/// - scoring/: Cálculo de puntuación de riesgo
+///
+/// Uso:
+/// ```dart
+/// final result = DetectionEngine.analyze(
+///   id: 'msg_123',
+///   sender: '+573001234567',
+///   message: 'Tu cuenta ha sido suspendida...',
+///   timestamp: DateTime.now(),
+/// );
+/// ```
+
+import '../shared/models/sms_message.dart';
+import 'patterns/intent_patterns.dart';
+import 'patterns/risk_patterns.dart';
+import 'entities/entities_database.dart';
+import 'scoring/risk_calculator.dart';
+
+class DetectionEngine {
+  /// Analiza un mensaje SMS y retorna un SMSMessage con toda la información de riesgo
+  static SMSMessage analyze({
+    required String id,
+    required String sender,
+    required String message,
+    required DateTime timestamp,
+    bool isDemo = false,
+  }) {
+    // 1. Análisis de intención (qué quiere que hagas)
+    final intentAnalysis = IntentPatterns.analyze(message, sender);
+
+    // 2. Cálculo de riesgo base (patrones sospechosos)
+    final baseRiskScore = RiskPatterns.calculateRiskScore(message, sender);
+
+    // 3. Boost de riesgo por intención
+    final finalRiskScore = (baseRiskScore + intentAnalysis.intentRiskBoost).clamp(0, 100);
+
+    // 4. Identificar elementos sospechosos
+    final suspiciousElements = RiskPatterns.identifySuspiciousElements(message, sender);
+
+    // 5. Agregar guía basada en intención
+    if (intentAnalysis.isHighRisk) {
+      suspiciousElements.insert(0, intentAnalysis.userGuidance);
+    }
+
+    // 6. Decisión de cuarentena
+    final shouldQuarantine = finalRiskScore >= 75 || intentAnalysis.shouldBlockLinks;
+
+    // 7. Detectar entidades mencionadas
+    final detectedEntities = EntitiesDatabase.detectEntities(message);
+
+    // 8. Generar sugerencias de canales oficiales si es necesario
+    List<OfficialContactSuggestion>? officialSuggestions;
+    if (detectedEntities.isNotEmpty && intentAnalysis.shouldBlockLinks) {
+      officialSuggestions = EntitiesDatabase.generateContactSuggestions(detectedEntities);
+    }
+
+    return SMSMessage(
+      id: id,
+      sender: sender,
+      message: message,
+      timestamp: timestamp,
+      riskScore: finalRiskScore,
+      isQuarantined: shouldQuarantine,
+      suspiciousElements: suspiciousElements,
+      detectedEntities: detectedEntities.isNotEmpty ? detectedEntities : null,
+      officialSuggestions: officialSuggestions,
+      intentAnalysis: intentAnalysis,
+      isDemo: isDemo,
+    );
+  }
+
+  /// Extrae URLs reales del mensaje
+  static List<String> extractLinks(String message) {
+    return RiskPatterns.extractRealLinks(message);
+  }
+
+  /// Extrae dominios escritos como texto plano
+  static List<String> extractPlainTextDomains(String message) {
+    return RiskPatterns.extractPlainTextDomains(message);
+  }
+
+  /// Detecta si hay calls-to-action
+  static bool hasCallToAction(String message) {
+    return RiskPatterns.hasCallToAction(message);
+  }
+
+  /// Extrae dominio de una URL
+  static String? extractDomain(String url) {
+    return RiskPatterns.extractDomain(url);
+  }
+
+  /// Verifica si un dominio es confiable
+  static bool isDomainTrusted(String domain) {
+    return RiskPatterns.isDomainTrusted(domain);
+  }
+
+  /// Determina si debe mostrar canales oficiales
+  static bool shouldShowOfficialChannels(String message, int riskScore) {
+    return RiskPatterns.shouldShowOfficialChannels(message, riskScore);
+  }
+}

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/sms_message.dart';
-import '../services/official_entities_service.dart';
-import '../core/app_colors.dart';
+import '../../detection/entities/official_entities_service.dart';
+import '../../core/app_colors.dart';
 
 class OfficialSuggestionsWidget extends StatelessWidget {
   final SMSMessage smsMessage;

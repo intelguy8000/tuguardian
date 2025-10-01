@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../models/sms_message.dart';
+import '../shared/models/sms_message.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
@@ -20,8 +20,9 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // UPGRADED to version 2
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -39,11 +40,22 @@ class DatabaseService {
         riskScore $intType,
         isQuarantined $intType,
         suspiciousElements $textType,
+        detectedEntities $textType,
+        hasOfficialSuggestions $intType,
         isDemo $intType
       )
     ''');
 
     print('✅ Base de datos creada');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add new columns for intent detection
+      await db.execute('ALTER TABLE sms_messages ADD COLUMN detectedEntities TEXT NOT NULL DEFAULT ""');
+      await db.execute('ALTER TABLE sms_messages ADD COLUMN hasOfficialSuggestions INTEGER NOT NULL DEFAULT 0');
+      print('✅ Base de datos actualizada a versión 2');
+    }
   }
 
   Future<void> insertMessage(SMSMessage message) async {

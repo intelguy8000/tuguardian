@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/sms_message.dart';
-import '../widgets/official_suggestions_widget.dart';
+import 'official_suggestions_widget.dart';
 
 class MessageDetailsModal extends StatelessWidget {
   final SMSMessage message;

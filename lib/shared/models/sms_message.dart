@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/official_entities_service.dart';
+import '../../detection/entities/official_entities_service.dart';
+import '../../services/intent_detection_service.dart';
 
 class SMSMessage {
   final String id;
@@ -12,6 +13,7 @@ class SMSMessage {
   final List<OfficialEntity>? detectedEntities;
   final List<OfficialContactSuggestion>? officialSuggestions;
   final bool isDemo; // NUEVO - Para sistema dual
+  final IntentAnalysisResult? intentAnalysis; // NUEVO - Intent detection
   
   SMSMessage({
     required this.id,
@@ -24,6 +26,7 @@ class SMSMessage {
     this.detectedEntities,
     this.officialSuggestions,
     this.isDemo = false, // NUEVO - Por defecto es REAL
+    this.intentAnalysis, // NUEVO - Intent analysis
   });
   
   // Getters para clasificación de riesgo
@@ -148,6 +151,7 @@ class SMSMessage {
     List<OfficialEntity>? detectedEntities,
     List<OfficialContactSuggestion>? officialSuggestions,
     bool? isDemo, // NUEVO
+    IntentAnalysisResult? intentAnalysis, // NUEVO
   }) {
     return SMSMessage(
       id: id ?? this.id,
@@ -160,6 +164,7 @@ class SMSMessage {
       detectedEntities: detectedEntities ?? this.detectedEntities,
       officialSuggestions: officialSuggestions ?? this.officialSuggestions,
       isDemo: isDemo ?? this.isDemo, // NUEVO
+      intentAnalysis: intentAnalysis ?? this.intentAnalysis, // NUEVO
     );
   }
   

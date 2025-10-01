@@ -43,7 +43,22 @@ class OfficialEntitiesService {
       hasApp: true,
       aliases: ['occidente', 'banco occidente'],
     ),
-    
+
+    'banco_bogota': OfficialEntity(
+      name: 'Banco de Bogotá',
+      whatsapp: '573162222222',
+      website: 'https://www.bancodebogota.com',
+      hasApp: true,
+      aliases: ['bogota', 'banco bogota', 'banco de bogotá'],
+    ),
+
+    'bank_of_america': OfficialEntity(
+      name: 'Bank of America',
+      website: 'https://www.bankofamerica.com',
+      hasApp: true,
+      aliases: ['bofa', 'boa', 'bank america'],
+    ),
+
     'interrapidisimo': OfficialEntity(
       name: 'Inter Rapidísimo',
       website: 'https://www.interrapidisimo.com',
@@ -91,8 +106,29 @@ class OfficialEntitiesService {
     'dhl': OfficialEntity(
       name: 'DHL',
       website: 'https://www.dhl.com/',
-      hasApp: false,
-      aliases: ['dhl express', 'dhl colombia'],
+      hasApp: true,
+      aliases: ['dhl express', 'dhl colombia', 'paquete dhl', 'envío dhl', 'envio dhl'],
+    ),
+
+    'fedex': OfficialEntity(
+      name: 'FedEx',
+      website: 'https://www.fedex.com/',
+      hasApp: true,
+      aliases: ['fedex express', 'fedex colombia', 'paquete fedex'],
+    ),
+
+    'servientrega': OfficialEntity(
+      name: 'Servientrega',
+      website: 'https://www.servientrega.com/',
+      hasApp: true,
+      aliases: ['servientrega colombia', 'paquete servientrega'],
+    ),
+
+    'coordinadora': OfficialEntity(
+      name: 'Coordinadora',
+      website: 'https://www.coordinadora.com/',
+      hasApp: true,
+      aliases: ['coordinadora mercantil', 'paquete coordinadora'],
     ),
     
     'movistar': OfficialEntity(
@@ -139,17 +175,54 @@ class OfficialEntitiesService {
     return _entities.values.toList();
   }
 
+  /// Check if a link domain matches any official entity
+  static OfficialEntity? findEntityByDomain(String link) {
+    try {
+      Uri uri = Uri.parse(link.toLowerCase());
+      String domain = uri.host;
+
+      for (OfficialEntity entity in _entities.values) {
+        if (entity.website == null) continue;
+
+        Uri officialUri = Uri.parse(entity.website!.toLowerCase());
+        String officialDomain = officialUri.host;
+
+        // Exact match or subdomain match
+        if (domain == officialDomain || domain.endsWith('.$officialDomain')) {
+          return entity;
+        }
+      }
+    } catch (e) {
+      // Invalid URI
+    }
+
+    return null;
+  }
+
+  /// Check if a link is suspicious (doesn't match detected entities)
+  static bool isLinkSuspicious(String link, List<OfficialEntity> detectedEntities) {
+    if (detectedEntities.isEmpty) return true; // No entity = can't verify
+
+    OfficialEntity? entityFromLink = findEntityByDomain(link);
+
+    // Link doesn't match any known official entity
+    if (entityFromLink == null) return true;
+
+    // Link matches an entity, but NOT the one mentioned in message
+    return !detectedEntities.contains(entityFromLink);
+  }
+
   /// Buscar entidad específica por nombre
   static OfficialEntity? getEntityByName(String name) {
     String lowerName = name.toLowerCase();
-    
+
     for (String key in _entities.keys) {
       OfficialEntity entity = _entities[key]!;
-      
+
       if (entity.name.toLowerCase() == lowerName) {
         return entity;
       }
-      
+
       // Buscar en aliases
       for (String alias in entity.aliases) {
         if (alias.toLowerCase() == lowerName) {

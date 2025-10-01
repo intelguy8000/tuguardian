@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/home_screen.dart';
-import 'providers/sms_provider.dart';
-import 'providers/theme_provider.dart';
+import 'features/home/home_screen.dart';
+import 'shared/providers/sms_provider.dart';
+import 'shared/providers/theme_provider.dart';
 import 'core/app_colors.dart';
 
 void main() {

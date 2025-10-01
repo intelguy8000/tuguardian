@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:telephony/telephony.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../models/sms_message.dart';
+import '../shared/models/sms_message.dart';
 import 'detection_service.dart';
 
 class SMSServiceReal {
