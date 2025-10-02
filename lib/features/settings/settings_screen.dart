@@ -233,10 +233,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               try {
                 await smsProvider.enableRealMode();
                 if (mounted) {
+                  int totalMessages = smsProvider.realMessages.length;
+                  int threats = smsProvider.realMessages.where((m) => m.isDangerous).length;
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('✅ Protección activada. ${smsProvider.allMessages.length} mensajes cargados.'),
+                      content: Text(
+                        '✅ Protección activada!\n'
+                        '📱 $totalMessages mensajes analizados\n'
+                        '${threats > 0 ? "🚫 $threats amenazas bloqueadas" : "✅ Ninguna amenaza detectada"}'
+                      ),
                       backgroundColor: Colors.green,
+                      duration: Duration(seconds: 4),
                     ),
                   );
                 }
@@ -485,14 +493,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showPrivacyPolicy() {
+    final isDark = Provider.of<ThemeProvider>(context, listen: false).isDarkMode;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Política de Privacidad'),
-        content: const Text(
-          'TuGuardian procesa los mensajes localmente en tu dispositivo. '
-          'No compartimos ni vendemos tu información personal. '
-          'Los datos son utilizados únicamente para detectar amenazas.',
+        title: const Text('Política de Privacidad y Términos'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'PROCESAMIENTO DE DATOS',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'TuGuardian procesa los mensajes SMS localmente en tu dispositivo. '
+                'No compartimos ni vendemos tu información personal. '
+                'Los datos son utilizados únicamente para detectar amenazas de smishing.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'ELIMINACIÓN DE MENSAJES',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'IMPORTANTE: Al eliminar conversaciones en TuGuardian, los mensajes se eliminan únicamente de la base de datos local de TuGuardian. '
+                'Los mensajes SMS permanecerán en el sistema Android y seguirán visibles en otras aplicaciones de mensajería (como Google Messages). '
+                'TuGuardian no tiene permiso para eliminar mensajes del sistema Android.\n\n'
+                'Si desinstalas y reinstalas TuGuardian, los mensajes "eliminados" volverán a aparecer, '
+                'ya que la aplicación los cargará nuevamente desde el sistema Android.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'ALMACENAMIENTO LOCAL',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Toda la información se almacena exclusivamente en tu dispositivo. '
+                'No utilizamos servidores externos para almacenar tus mensajes.',
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

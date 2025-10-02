@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 import '../../shared/providers/sms_provider.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../../shared/models/sms_message.dart';
+import '../../shared/models/conversation_message.dart';
+import '../../services/conversation_service.dart';
 import '../../core/app_colors.dart';
 import '../settings/settings_screen.dart';
 import '../message_detail/message_detail_screen.dart';
+import '../conversation/conversation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +23,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   Set<String> _readMessages = <String>{};
+  Set<String> _readConversations = <String>{}; // Track read conversations by sender
+
+  // Edit mode variables
+  bool _isEditMode = false;
+  Set<String> _selectedConversations = <String>{}; // Track selected conversations by sender
 
   @override
   void initState() {
@@ -48,9 +56,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           alignment: Alignment.centerLeft,
           margin: const EdgeInsets.only(left: 16),
           child: GestureDetector(
-            onTap: () {},
+            onTap: () {
+              setState(() {
+                _isEditMode = !_isEditMode;
+                if (!_isEditMode) {
+                  // Clear selections when exiting edit mode
+                  _selectedConversations.clear();
+                }
+              });
+            },
             child: Text(
-              'Editar',
+              _isEditMode ? 'Listo' : 'Editar',
               style: TextStyle(
                 color: AppColors.primaryTech,
                 fontSize: 17,
@@ -129,8 +145,164 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildSMSTab(isDark),
-          _buildChatTab(isDark),
+          _buildConversationsTab(isDark), // SMS tab shows conversations
+          _buildChatTab(isDark), // Chat tab for future secure chat
+        ],
+      ),
+      bottomNavigationBar: _isEditMode ? _buildEditModeToolbar(isDark) : null,
+    );
+  }
+
+  /// Build toolbar for edit mode with actions
+  Widget _buildEditModeToolbar(bool isDark) {
+    final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+    int selectedCount = _selectedConversations.length;
+
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+          // Mark as Read button
+          _buildToolbarButton(
+            icon: Icons.mark_email_read_outlined,
+            label: 'Leído',
+            enabled: selectedCount > 0,
+            onTap: () {
+              for (String sender in _selectedConversations) {
+                smsProvider.markMessagesAsRead(sender);
+                _readConversations.add(sender);
+              }
+              setState(() {
+                _selectedConversations.clear();
+                _isEditMode = false;
+              });
+            },
+            isDark: isDark,
+          ),
+
+          // Mark as Unread button
+          _buildToolbarButton(
+            icon: Icons.mark_email_unread_outlined,
+            label: 'No leído',
+            enabled: selectedCount > 0,
+            onTap: () {
+              // Remove from read conversations locally
+              for (String sender in _selectedConversations) {
+                _readConversations.remove(sender);
+              }
+
+              // Mark as unread in provider (updates badge)
+              smsProvider.markMessagesAsUnread(_selectedConversations.toList());
+
+              setState(() {
+                _selectedConversations.clear();
+                _isEditMode = false;
+              });
+            },
+            isDark: isDark,
+          ),
+
+          // Delete button
+          _buildToolbarButton(
+            icon: Icons.delete_outline,
+            label: 'Eliminar',
+            enabled: selectedCount > 0,
+            onTap: () => _showDeleteConfirmation(isDark),
+            isDark: isDark,
+            isDestructive: true,
+          ),
+        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolbarButton({
+    required IconData icon,
+    required String label,
+    required bool enabled,
+    required VoidCallback onTap,
+    required bool isDark,
+    bool isDestructive = false,
+  }) {
+    final color = !enabled
+        ? Colors.grey.shade400
+        : isDestructive
+            ? Colors.red
+            : AppColors.primaryTech;
+
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(bool isDark) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Eliminar ${_selectedConversations.length} conversaciones'),
+        content: const Text(
+          'Estas conversaciones se eliminarán solo de TuGuardian. Los mensajes permanecerán en otras apps de SMS.\n\nEsta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Get provider from context
+              final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+
+              // Delete conversations from TuGuardian database
+              await smsProvider.deleteConversations(_selectedConversations.toList());
+
+              // Also remove from local read tracking
+              for (String sender in _selectedConversations) {
+                _readConversations.remove(sender);
+              }
+
+              setState(() {
+                _selectedConversations.clear();
+                _isEditMode = false;
+              });
+
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Conversaciones eliminadas de TuGuardian'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -434,6 +606,250 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  Widget _buildConversationsTab(bool isDark) {
+    return Consumer<SMSProvider>(
+      builder: (context, smsProvider, child) {
+        // Build conversations from all messages
+        List<Conversation> conversations = ConversationService.buildConversations(
+          smsProvider.allMessages,
+        );
+
+        if (conversations.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 64,
+                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No hay conversaciones',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Scrollbar(
+          thickness: 8,
+          radius: Radius.circular(4),
+          thumbVisibility: false,
+          child: ListView.separated(
+            padding: EdgeInsets.only(top: 8, bottom: 160), // Extra bottom padding for Samsung nav bar
+            itemCount: conversations.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+              indent: 70,
+            ),
+            itemBuilder: (context, index) {
+              return _buildConversationRow(conversations[index], isDark);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildConversationRow(Conversation conversation, bool isDark) {
+    // Check if conversation is unread
+    bool isUnread = !_readConversations.contains(conversation.sender);
+
+    // Get the actual SMS content for preview (not TuGuardian's analysis)
+    String previewMessage = '';
+    if (conversation.messages.isNotEmpty) {
+      // Find the last SMS_RECEIVED message (not TuGuardian analysis)
+      for (int i = conversation.messages.length - 1; i >= 0; i--) {
+        if (conversation.messages[i].isFromSender) {
+          previewMessage = conversation.messages[i].content;
+          break;
+        }
+      }
+    }
+
+    // Determine border color based on risk (NO GREEN - only red/orange/none)
+    Color? borderColor;
+    if (conversation.hasDangerousMessages) {
+      borderColor = Colors.red;
+    } else {
+      // Check if has moderate messages
+      bool hasModerate = conversation.messages.any((msg) =>
+        msg.originalSMS?.isModerate ?? false
+      );
+      if (hasModerate) {
+        borderColor = Colors.orange;
+      } else {
+        borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300; // Neutral gray for safe
+      }
+    }
+
+    bool isSelected = _selectedConversations.contains(conversation.sender);
+
+    return GestureDetector(
+      onTap: () {
+        if (_isEditMode) {
+          // In edit mode, toggle selection
+          setState(() {
+            if (isSelected) {
+              _selectedConversations.remove(conversation.sender);
+            } else {
+              _selectedConversations.add(conversation.sender);
+            }
+          });
+        } else {
+          // Normal mode: open conversation
+          final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+
+          // Mark as read when tapped
+          setState(() {
+            _readConversations.add(conversation.sender);
+          });
+
+          // Mark messages as read in provider (updates badge)
+          smsProvider.markMessagesAsRead(conversation.sender);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ConversationScreen(conversation: conversation),
+            ),
+          );
+        }
+      },
+      child: Container(
+        color: isDark ? AppColors.darkBackground : Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            // Checkbox in edit mode OR Blue dot in normal mode
+            if (_isEditMode)
+              Container(
+                width: 24,
+                height: 24,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                  color: isSelected ? AppColors.primary : Colors.transparent,
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, color: Colors.white, size: 16)
+                    : null,
+              )
+            else
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: isUnread ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+
+            // Avatar with colored border (red/orange/green)
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: borderColor,
+                  width: 2.5,
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Conversation info (iOS style: sender + time on same line, then preview)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          conversation.sender,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (conversation.lastMessageTime != null)
+                        Text(
+                          _formatConversationTime(conversation.lastMessageTime!),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                            fontSize: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    previewMessage.isEmpty ? 'Sin mensajes' : previewMessage,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Icon(
+              Icons.chevron_right,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade400,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatConversationTime(DateTime timestamp) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+    if (messageDate == today) {
+      return '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
+    } else if (messageDate == today.subtract(Duration(days: 1))) {
+      return 'Ayer';
+    } else if (now.difference(timestamp).inDays < 7) {
+      final weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      return weekdays[timestamp.weekday - 1];
+    } else {
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year % 100}';
+    }
   }
 
   Widget _buildChatTab(bool isDark) {

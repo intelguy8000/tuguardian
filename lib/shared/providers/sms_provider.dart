@@ -4,19 +4,24 @@ import '../models/sms_message.dart';
 import '../../services/detection_service.dart';
 import '../../services/sms_listener_service.dart';
 import '../../services/database_service.dart';
+import '../../services/badge_service.dart';
 
 class SMSProvider with ChangeNotifier {
   // LISTAS SEPARADAS
   List<SMSMessage> _demoMessages = [];
   List<SMSMessage> _realMessages = [];
-  
+
   bool _isLoading = false;
   String? _error;
   bool _isRealModeEnabled = false;
-  
+
+  // UNREAD TRACKING
+  Set<String> _readMessageIds = <String>{};
+
   // SERVICIOS
   final SMSListenerService _listenerService = SMSListenerService();
   final DatabaseService _db = DatabaseService.instance;
+  final BadgeService _badgeService = BadgeService.instance;
   
   Function(BuildContext, SMSMessage)? onThreatDetected;
   
@@ -43,6 +48,11 @@ class SMSProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isRealModeEnabled => _isRealModeEnabled;
+
+  // UNREAD COUNT - Only count real SMS messages (not demo)
+  int get unreadCount {
+    return _realMessages.where((msg) => !_readMessageIds.contains(msg.id)).length;
+  }
   
   // ESTADÍSTICAS DEMO
   Map<String, dynamic> get demoStats => _calculateStats(_demoMessages);
@@ -128,14 +138,18 @@ class SMSProvider with ChangeNotifier {
       }
       
       print('✅ ${_realMessages.length} SMS cargados');
-      
+
       // 3. INICIAR LISTENER PARA NUEVOS SMS
       print('🎧 Iniciando listener...');
       _listenerService.onMessageReceived = _handleNewSMS;
       await _listenerService.startListening();
-      
+
       _isRealModeEnabled = true;
       _isLoading = false;
+
+      // 4. UPDATE BADGE WITH INITIAL UNREAD COUNT
+      _updateBadge();
+
       notifyListeners();
       
       print('🎉 MODO REAL ACTIVADO');
@@ -158,18 +172,21 @@ class SMSProvider with ChangeNotifier {
     print('🆕 Nuevo SMS capturado:');
     print('   De: ${message.sender}');
     print('   Score: ${message.riskScore}');
-    
+
     // Agregar a lista
     _realMessages.insert(0, message);
-    
+
     // Guardar en DB
     _db.insertMessage(message);
-    
+
     // Limpiar mensajes antiguos
     _db.cleanOldRealMessages();
-    
+
+    // Update badge with new unread count
+    _updateBadge();
+
     notifyListeners();
-    
+
     // Notificar si es peligroso (sin notificaciones por ahora)
     if (message.isDangerous || message.isQuarantined) {
       print('⚠️ AMENAZA DETECTADA');
@@ -535,6 +552,89 @@ class SMSProvider with ChangeNotifier {
       print('✅ SMS enviado exitosamente');
     } catch (e) {
       print('❌ Error enviando SMS: $e');
+      throw e;
+    }
+  }
+
+  /// Mark messages from a specific sender as read
+  void markMessagesAsRead(String sender) {
+    // Find all messages from this sender and mark as read
+    List<SMSMessage> senderMessages = _realMessages.where((msg) => msg.sender == sender).toList();
+
+    for (var msg in senderMessages) {
+      _readMessageIds.add(msg.id);
+    }
+
+    // Update badge
+    _updateBadge();
+
+    notifyListeners();
+  }
+
+  /// Mark a specific message as read
+  void markMessageAsRead(String messageId) {
+    _readMessageIds.add(messageId);
+    _updateBadge();
+    notifyListeners();
+  }
+
+  /// Mark messages from specific senders as unread
+  void markMessagesAsUnread(List<String> senders) {
+    // Find all messages from these senders and mark as unread
+    for (String sender in senders) {
+      List<SMSMessage> senderMessages = _realMessages.where((msg) => msg.sender == sender).toList();
+
+      for (var msg in senderMessages) {
+        _readMessageIds.remove(msg.id);
+      }
+    }
+
+    // Update badge
+    _updateBadge();
+
+    notifyListeners();
+  }
+
+  /// Update the app badge with current unread count
+  void _updateBadge() {
+    print('🔔 Actualizando badge: $unreadCount mensajes no leídos');
+    _badgeService.updateBadge(unreadCount);
+  }
+
+  /// Clear all read status (for testing)
+  void clearReadStatus() {
+    _readMessageIds.clear();
+    _updateBadge();
+    notifyListeners();
+  }
+
+  /// Delete conversations from specific senders (local database only)
+  Future<void> deleteConversations(List<String> senders) async {
+    try {
+      for (String sender in senders) {
+        // Find all messages from this sender
+        List<SMSMessage> messagesToDelete = _realMessages.where((msg) => msg.sender == sender).toList();
+
+        // Delete from local database
+        for (var msg in messagesToDelete) {
+          await _db.deleteMessage(msg.id);
+
+          // Remove from read tracking if it was there
+          _readMessageIds.remove(msg.id);
+        }
+
+        // Remove from in-memory list
+        _realMessages.removeWhere((msg) => msg.sender == sender);
+      }
+
+      // Update badge count
+      _updateBadge();
+
+      notifyListeners();
+
+      print('✅ Eliminadas ${senders.length} conversaciones de TuGuardian');
+    } catch (e) {
+      print('❌ Error eliminando conversaciones: $e');
       throw e;
     }
   }

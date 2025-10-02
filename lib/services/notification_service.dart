@@ -66,6 +66,16 @@ class NotificationService {
       sound: RawResourceAndroidNotificationSound('system_default'),
     );
 
+    // CHANNEL 3: Unread summary (for badge display)
+    const AndroidNotificationChannel unreadSummaryChannel = AndroidNotificationChannel(
+      'unread_summary',
+      'Mensajes no leídos',
+      description: 'Resumen de mensajes SMS no leídos',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
+    );
+
     await _notifications
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
@@ -75,6 +85,11 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(dangerChannel);
+
+    await _notifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(unreadSummaryChannel);
 
     print('✅ Canales de notificación creados');
   }

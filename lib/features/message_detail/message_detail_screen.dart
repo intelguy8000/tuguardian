@@ -127,16 +127,15 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 200),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
                   _buildIncomingMessage(isDark, isThreat, isVerification),
                   const SizedBox(height: 16),
-                  if (isThreat || hasCallToAction || isVerification) 
+                  if (isThreat || hasCallToAction || isVerification)
                     _buildTuGuardianResponse(isDark, isThreat, isVerification),
-                  const SizedBox(height: 40),
                 ],
               ),
             ),
