@@ -51,7 +51,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
-    final isThreat = widget.message.isQuarantined;
+    final isThreat = widget.message.isQuarantined || widget.message.isDangerous;
     final hasCallToAction = widget.message.suspiciousElements.isNotEmpty;
     final isVerification = _isVerificationMessage();
 
@@ -366,15 +366,19 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   Widget _buildIncomingMessage(bool isDark, bool isThreat, bool isVerification) {
     Color containerColor;
     Border? containerBorder;
-    
+
     if (isThreat) {
-      containerColor = Colors.red.shade100;
-      containerBorder = Border.all(color: Colors.red.shade300, width: 1);
+      // Mensaje peligroso: rojo suave con borde rojo
+      containerColor = isDark ? Color(0xFF4A2020) : Color(0xFFFFEBEE);
+      containerBorder = Border.all(
+        color: isDark ? Color(0xFFE57373) : Color(0xFFEF5350),
+        width: 2
+      );
     } else if (isVerification) {
-      containerColor = Colors.orange.shade50;
+      containerColor = isDark ? Colors.orange.shade900.withOpacity(0.3) : Colors.orange.shade50;
       containerBorder = Border.all(color: Colors.orange.shade200, width: 1);
     } else {
-      containerColor = Colors.grey.shade200;
+      containerColor = isDark ? AppColors.darkCard : Colors.grey.shade200;
       containerBorder = null;
     }
 
@@ -385,70 +389,100 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
-          child: GestureDetector(
-            onLongPress: () => _showMessageOptions(isDark),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: containerColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(4),
+          child: Stack(
+            children: [
+              // Mensaje real
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: containerColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(18),
+                    bottomRight: Radius.circular(18),
+                    bottomLeft: Radius.circular(4),
+                  ),
+                  border: containerBorder,
                 ),
-                border: containerBorder,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isThreat) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.shield,
+                            color: isDark ? Color(0xFF90CAF9) : Color(0xFF1976D2),
+                            size: 14
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'TuGuardian bloqueó este mensaje',
+                            style: TextStyle(
+                              color: isDark ? Color(0xFF90CAF9) : Color(0xFF1976D2),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (isVerification) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.verified_user, color: Colors.orange, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Verificación bancaria detectada',
+                            style: TextStyle(
+                              color: Colors.orange.shade800,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    // Para mensajes peligrosos: texto plano sin auto-link
+                    // Para mensajes seguros: texto seleccionable
+                    Text(
+                      widget.message.message,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (isThreat) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.shield, color: Colors.red, size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          'TuGuardian bloqueó este mensaje',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  if (isVerification) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.verified_user, color: Colors.orange, size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Verificación bancaria detectada',
-                          style: TextStyle(
-                            color: Colors.orange.shade800,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  SelectableText(
-                    widget.message.message,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
+              // Capa invisible que bloquea TODOS los toques si es peligroso
+              // IMPORTANTE: Este DEBE capturar los clicks ANTES que el sistema Android
+              if (isThreat)
+                Positioned.fill(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showThreatWarning(),
+                      onLongPress: () => _showThreatWarning(),
+                      child: Container(),
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
+              // GestureDetector para mensajes NO peligrosos
+              if (!isThreat)
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onLongPress: () => _showMessageOptions(isDark),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+            ],
           ),
-        ),
+          ),
         const Spacer(),
       ],
     );
@@ -484,7 +518,8 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  // Azul pastel en light mode, azul más fuerte en dark mode
+                  color: isDark ? Color(0xFF1565C0) : Color(0xFFBBDEFB),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(18),
                     topRight: Radius.circular(18),
@@ -500,13 +535,15 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Color(0xFF1976D2).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           intentSummary,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDark ? Colors.white : Color(0xFF0D47A1),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -518,13 +555,17 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.shield, color: Colors.white, size: 18),
+                        Icon(
+                          Icons.shield,
+                          color: isDark ? Colors.white : Color(0xFF0D47A1),
+                          size: 18
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             responseText,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : Color(0xFF0D47A1),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               height: 1.4,
@@ -1069,5 +1110,43 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
 
   String _formatTime(DateTime timestamp) {
     return '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Sanitiza el mensaje para romper links y evitar auto-detección
+  String _sanitizeMessage(String message) {
+    // Inserta caracteres ZERO-WIDTH SPACE (invisible) para romper links
+    // Android NO detecta estos caracteres pero los links quedan rotos
+    const zeroWidth = '\u200B'; // Zero-width space (invisible)
+
+    return message
+        .replaceAll('http://', 'http$zeroWidth://')
+        .replaceAll('https://', 'https$zeroWidth://')
+        .replaceAll('www.', 'www$zeroWidth.')
+        .replaceAll('.com', '$zeroWidth.com')
+        .replaceAll('.net', '$zeroWidth.net')
+        .replaceAll('.org', '$zeroWidth.org')
+        .replaceAll('.co', '$zeroWidth.co');
+  }
+
+  void _showThreatWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.shield, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Mensaje bloqueado por TuGuardian. No puedes copiar ni seleccionar contenido peligroso para tu protección.',
+                style: TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red.shade700,
+        duration: Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

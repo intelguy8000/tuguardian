@@ -40,12 +40,13 @@ class ConversationService {
     smsList.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     for (var sms in smsList) {
-      // Add SMS received message
+      // Add SMS received message (with originalSMS for color coding)
       messages.add(ConversationMessage(
         id: '${sms.id}_sms',
         type: ConversationMessageType.SMS_RECEIVED,
         content: sms.message,
         timestamp: sms.timestamp,
+        originalSMS: sms, // Add this to enable color coding
       ));
 
       // Add TuGuardian analysis message

@@ -97,7 +97,9 @@ class MessageBubble extends StatelessWidget {
                       sms: message.originalSMS!,
                       baseStyle: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: (message.originalSMS?.isDangerous ?? false)
+                            ? (isDark ? Colors.white : Color(0xFF0D47A1))
+                            : (isDark ? Colors.white : Colors.black87),
                         height: 1.4,
                       ),
                     )
@@ -106,7 +108,9 @@ class MessageBubble extends StatelessWidget {
                       message.content,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: (message.originalSMS?.isDangerous ?? false)
+                            ? (isDark ? Colors.white : Color(0xFF0D47A1))
+                            : (isDark ? Colors.white : Colors.black87),
                         height: 1.4,
                       ),
                     ),
@@ -131,6 +135,10 @@ class MessageBubble extends StatelessWidget {
 
   /// SMS received bubble (right side, with sender)
   Widget _buildSMSBubble(bool isDark) {
+    final bool isDangerous = message.originalSMS?.isDangerous ?? false;
+    final bool isQuarantined = message.originalSMS?.isQuarantined ?? false;
+    final bool isThreat = isDangerous || isQuarantined;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Row(
@@ -142,16 +150,23 @@ class MessageBubble extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkCard : Colors.grey.shade100,
+                color: isThreat
+                    ? (isDark ? Color(0xFF4A2020) : Color(0xFFFFEBEE))
+                    : (isDark ? AppColors.darkCard : Colors.grey.shade100),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(4),
                 ),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
-                ),
+                border: isThreat
+                    ? Border.all(
+                        color: isDark ? Color(0xFFE57373) : Color(0xFFEF5350),
+                        width: 2,
+                      )
+                    : Border.all(
+                        color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                      ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +287,8 @@ class MessageBubble extends StatelessWidget {
 
   Color _getBackgroundColor(bool isDark) {
     if (message.originalSMS?.isDangerous ?? false) {
-      return isDark ? Colors.red.shade900.withOpacity(0.3) : Colors.red.shade50;
+      // TuGuardian message: azul pastel (confianza)
+      return isDark ? Color(0xFF1565C0) : Color(0xFFBBDEFB);
     }
     if (message.originalSMS?.isModerate ?? false) {
       return isDark ? Colors.orange.shade900.withOpacity(0.3) : Colors.orange.shade50;
@@ -282,7 +298,8 @@ class MessageBubble extends StatelessWidget {
 
   Color _getBorderColor(bool isDark) {
     if (message.originalSMS?.isDangerous ?? false) {
-      return Colors.red.shade400;
+      // TuGuardian message: azul (confianza)
+      return isDark ? Color(0xFF90CAF9) : Color(0xFF1976D2);
     }
     if (message.originalSMS?.isModerate ?? false) {
       return Colors.orange.shade400;
@@ -292,7 +309,8 @@ class MessageBubble extends StatelessWidget {
 
   Color _getLabelColor() {
     if (message.originalSMS?.isDangerous ?? false) {
-      return Colors.red.shade700;
+      // TuGuardian label: azul oscuro (confianza)
+      return Color(0xFF0D47A1);
     }
     if (message.originalSMS?.isModerate ?? false) {
       return Colors.orange.shade700;
@@ -305,11 +323,11 @@ class MessageBubble extends StatelessWidget {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.red.shade600,
+          color: Color(0xFF1976D2), // Azul (confianza)
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          '🚫 BLOQUEADO',
+          '🛡️ BLOQUEADO',
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
