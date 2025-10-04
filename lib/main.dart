@@ -4,6 +4,7 @@ import 'features/home/home_screen.dart';
 import 'shared/providers/sms_provider.dart';
 import 'shared/providers/theme_provider.dart';
 import 'core/app_colors.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const TuGuardianApp());
@@ -47,7 +48,7 @@ class TuGuardianApp extends StatelessWidget {
               ),
             ),
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: HomeScreen(), // SIN CONST
+            home: const SplashScreen(),
           );
         },
       ),

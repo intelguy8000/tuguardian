@@ -368,4 +368,34 @@ class IntentDetectionService {
 
     return patterns.any((p) => p.hasMatch(message));
   }
+
+  /// Check if message contains holiday shopping season keywords (December surge)
+  static bool hasHolidayShoppingPattern(String message) {
+    String lower = message.toLowerCase();
+
+    final patterns = [
+      // Black Friday / Cyber Monday (Spanish)
+      RegExp(r'\b(black.*friday|viernes.*negro|blackfriday)\b', caseSensitive: false),
+      RegExp(r'\b(cyber.*monday|lunes.*cyber|cybermonday|cyber.*lunes)\b', caseSensitive: false),
+      RegExp(r'\b(black.*week|semana.*black|hot.*sale)\b', caseSensitive: false),
+
+      // Christmas (Spanish)
+      RegExp(r'\b(navidad|navideño|navideña|christmas)\b', caseSensitive: false),
+      RegExp(r'\b(oferta.*navidad|venta.*navidad|descuento.*navidad)\b', caseSensitive: false),
+      RegExp(r'\b(temporada.*navidena|temporada.*festiva)\b', caseSensitive: false),
+
+      // Shipping/Delivery (December surge)
+      RegExp(r'\b(paquete|envio|envío|entrega|rastreo|tracking)\b', caseSensitive: false),
+      RegExp(r'\b(pedido|orden|compra|order)\b', caseSensitive: false),
+      RegExp(r'\b(guia.*rastreo|numero.*rastreo|tracking.*number)\b', caseSensitive: false),
+
+      // Gift cards (high fraud during holidays)
+      RegExp(r'\b(tarjeta.*regalo|gift.*card|bono.*regalo)\b', caseSensitive: false),
+
+      // Year-end promotions
+      RegExp(r'\b(fin.*de.*año|año.*nuevo|new.*year)\b', caseSensitive: false),
+    ];
+
+    return patterns.any((p) => p.hasMatch(lower));
+  }
 }

@@ -23,6 +23,8 @@ class MainActivity: FlutterActivity() {
         "fedex.com",
         "servientrega.com",
         "coordinadora.com",
+        "tcc.com.co",
+        "envia.com",
 
         // Seguros/Pensiones
         "sura.co",
@@ -34,6 +36,20 @@ class MainActivity: FlutterActivity() {
 
         // Otros servicios
         "primax.com.co",
+
+        // E-commerce & Retail (December shopping season)
+        "mercadolibre.com.co",
+        "mercadopago.com.co",
+        "amazon.com",
+        "falabella.com.co",
+        "exito.com",
+        "rappi.com.co",
+        "aliexpress.com",
+
+        // Digital Wallets/Fintech
+        "nequi.com.co",
+        "daviplata.com",
+        "paypal.com",
 
         // WhatsApp oficial
         "wa.me",

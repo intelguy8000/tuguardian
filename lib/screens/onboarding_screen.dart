@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../features/home/home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   @override
@@ -207,72 +208,70 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildPermissionExplanation() {
     return Container(
+      constraints: BoxConstraints(maxHeight: 280), // Límite de altura
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.blue[50],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue[100]!),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, color: Colors.blue[600], size: 24),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Permisos necesarios para tu protección',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildPermissionItem(
-            Icons.message,
-            'Leer mensajes SMS',
-            'Para analizar y detectar mensajes peligrosos en tiempo real',
-          ),
-          _buildPermissionItem(
-            Icons.notification_important,
-            'Mostrar notificaciones',
-            'Para alertarte inmediatamente sobre amenazas detectadas',
-          ),
-          _buildPermissionItem(
-            Icons.phone,
-            'Acceso al teléfono',
-            'Para ayudarte a contactar números oficiales cuando sea necesario',
-          ),
-          SizedBox(height: 12),
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.green[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green[200]!),
-            ),
-            child: Row(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
               children: [
-                Icon(Icons.lock, color: Colors.green[600], size: 16),
-                SizedBox(width: 8),
+                Icon(Icons.info_outline, color: Colors.blue[600], size: 24),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Todos los datos se procesan localmente en tu dispositivo',
+                    'Permisos necesarios para tu protección',
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green[700],
-                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[800],
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            SizedBox(height: 16),
+            _buildPermissionItem(
+              Icons.message,
+              'Leer mensajes SMS',
+              'Para analizar y detectar mensajes peligrosos en tiempo real',
+            ),
+            _buildPermissionItem(
+              Icons.notification_important,
+              'Mostrar notificaciones',
+              'Para alertarte inmediatamente sobre amenazas detectadas',
+            ),
+            SizedBox(height: 12),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lock, color: Colors.green[600], size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Todos los datos se procesan localmente en tu dispositivo',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -400,14 +399,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _showLoadingDialog();
 
     try {
-      // Request SMS permission
+      // Request SMS permission (CRITICAL - core functionality)
       PermissionStatus smsStatus = await Permission.sms.request();
-      
-      // Request notification permission
-      PermissionStatus notificationStatus = await Permission.notification.request();
-      
-      // Request phone permission
-      PermissionStatus phoneStatus = await Permission.phone.request();
+
+      // Request notification permission (important for alerts)
+      await Permission.notification.request();
 
       Navigator.of(context).pop(); // Close loading dialog
 
@@ -482,7 +478,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  Navigator.pushReplacementNamed(context, '/home');
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
                 child: Text('¡Empezar a usar TuGuardian!'),
                 style: ElevatedButton.styleFrom(

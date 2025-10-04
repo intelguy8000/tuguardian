@@ -138,6 +138,93 @@ class OfficialEntitiesService {
       hasApp: true,
       aliases: ['telefónica movistar', 'movistar colombia','mi.movistar.co', 'movistar.co'],
     ),
+
+    // E-commerce & Retail (Critical for December)
+    'mercadolibre': OfficialEntity(
+      name: 'MercadoLibre',
+      website: 'https://www.mercadolibre.com.co',
+      hasApp: true,
+      aliases: ['mercado libre', 'meli', 'mercadolibre colombia', 'ml'],
+    ),
+
+    'mercadopago': OfficialEntity(
+      name: 'MercadoPago',
+      website: 'https://www.mercadopago.com.co',
+      hasApp: true,
+      aliases: ['mercado pago', 'mpago'],
+    ),
+
+    'amazon': OfficialEntity(
+      name: 'Amazon',
+      website: 'https://www.amazon.com',
+      hasApp: true,
+      aliases: ['amazon.com', 'amazon prime', 'prime'],
+    ),
+
+    'falabella': OfficialEntity(
+      name: 'Falabella',
+      website: 'https://www.falabella.com.co',
+      hasApp: true,
+      aliases: ['falabella colombia', 'saga falabella'],
+    ),
+
+    'exito': OfficialEntity(
+      name: 'Éxito',
+      website: 'https://www.exito.com',
+      hasApp: true,
+      aliases: ['exito', 'almacenes exito', 'grupo exito'],
+    ),
+
+    'rappi': OfficialEntity(
+      name: 'Rappi',
+      website: 'https://www.rappi.com.co',
+      hasApp: true,
+      aliases: ['rappi colombia'],
+    ),
+
+    'aliexpress': OfficialEntity(
+      name: 'AliExpress',
+      website: 'https://www.aliexpress.com',
+      hasApp: true,
+      aliases: ['ali express'],
+    ),
+
+    // Digital Wallets/Fintech (CRITICAL - High smishing target)
+    'nequi': OfficialEntity(
+      name: 'Nequi',
+      website: 'https://www.nequi.com.co',
+      hasApp: true,
+      aliases: ['nequi colombia', 'app nequi'],
+    ),
+
+    'daviplata': OfficialEntity(
+      name: 'DaviPlata',
+      website: 'https://www.daviplata.com',
+      hasApp: true,
+      aliases: ['davi plata', 'daviplata davivienda'],
+    ),
+
+    'paypal': OfficialEntity(
+      name: 'PayPal',
+      website: 'https://www.paypal.com',
+      hasApp: true,
+      aliases: ['paypal.com'],
+    ),
+
+    // Additional Shipping (December surge)
+    'tcc': OfficialEntity(
+      name: 'TCC',
+      website: 'https://www.tcc.com.co',
+      hasApp: false,
+      aliases: ['tcc mensajeria', 'transportes tcc'],
+    ),
+
+    'envia': OfficialEntity(
+      name: 'Envía',
+      website: 'https://www.envia.com',
+      hasApp: true,
+      aliases: ['envia.com', 'envia colombia'],
+    ),
   };
 
   /// Detectar entidades mencionadas en un mensaje SMS sospechoso
