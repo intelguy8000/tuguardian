@@ -9,6 +9,7 @@ import '../../core/app_colors.dart';
 import '../settings/settings_screen.dart';
 import '../message_detail/message_detail_screen.dart';
 import '../conversation/conversation_screen.dart';
+import '../../shared/widgets/disclaimer_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +34,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Mostrar disclaimer la primera vez
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DisclaimerBottomSheet.showIfNeeded(context);
+    });
   }
 
   @override

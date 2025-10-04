@@ -615,6 +615,29 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
       child: SafeArea(
         child: Column(
           children: [
+            // Quick Reply Buttons (solo si puede responder)
+            if (canReply) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.flash_on, size: 16, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      _buildQuickReplyButton('SÍ', isDark),
+                      const SizedBox(width: 8),
+                      _buildQuickReplyButton('NO', isDark),
+                      const SizedBox(width: 8),
+                      _buildQuickReplyButton('Más tarde', isDark),
+                      const SizedBox(width: 8),
+                      _buildQuickReplyButton('Gracias', isDark),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
             if (isThreat && !_isUnlocked) ...[
               Container(
                 padding: const EdgeInsets.all(12),
@@ -850,29 +873,74 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
     final text = _replyController.text.trim();
     if (text.isEmpty) return;
 
-    setState(() => _isSending = true);
+    // Abrir app SMS del sistema con texto pre-llenado
+    await _openSMSApp(text);
+  }
+
+  Future<void> _openSMSApp(String prefilledText) async {
+    final uri = Uri(
+      scheme: 'sms',
+      path: widget.message.sender,
+      queryParameters: prefilledText.isNotEmpty
+        ? {'body': prefilledText}
+        : null,
+    );
 
     try {
-      final smsProvider = Provider.of<SMSProvider>(context, listen: false);
-      await smsProvider.sendSMSResponse(widget.message.sender, text);
-      
-      _replyController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Mensaje enviado'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('📱 Abriendo tu app de mensajes...'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+
+        // Limpiar el campo después de abrir
+        _replyController.clear();
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error enviando mensaje'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isSending = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo abrir la app de mensajes'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+
+  // Quick reply con texto predefinido
+  Future<void> _quickReply(String text) async {
+    _replyController.text = text;
+    await _openSMSApp(text);
+  }
+
+  Widget _buildQuickReplyButton(String text, bool isDark) {
+    return OutlinedButton(
+      onPressed: () => _quickReply(text),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: isDark ? Colors.white : AppColors.primary,
+        side: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.primary.withOpacity(0.5),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
   }
 
   void _showMoreOptions(bool isDark) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../../shared/providers/sms_provider.dart';
 import '../../core/app_colors.dart';
@@ -476,11 +477,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('TuGuardian'),
-        content: const Text(
-          'Versión 1.0.0\n\n'
-          'Tu protector personal contra amenazas de smishing. '
-          'Protegemos tu seguridad digital con inteligencia artificial avanzada.',
+        title: Row(
+          children: const [
+            Icon(Icons.security_rounded, color: Colors.blue, size: 28),
+            SizedBox(width: 12),
+            Text('TuGuardian'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Versión 1.0.0',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Tu protector personal contra amenazas de smishing. '
+                'Protegemos tu seguridad digital con inteligencia artificial avanzada.',
+                style: TextStyle(fontSize: 15),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text(
+                'Desarrollador',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Juan Andrés García\nMedellín, Colombia',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Contacto',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Email: 300hbk117@gmail.com\nTeléfono: +57 321 772 6074',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+              _buildLegalButton(
+                'Política de Privacidad',
+                Icons.privacy_tip_outlined,
+                () => _openUrl('https://intelguy8000.github.io/tuguardian/privacy-policy-es'),
+              ),
+              const SizedBox(height: 8),
+              _buildLegalButton(
+                'Términos y Condiciones',
+                Icons.description_outlined,
+                () => _openUrl('https://intelguy8000.github.io/tuguardian/terms-of-service-es'),
+              ),
+              const SizedBox(height: 8),
+              _buildLegalButton(
+                'Aviso Legal',
+                Icons.warning_amber_outlined,
+                () => _openUrl('https://intelguy8000.github.io/tuguardian/disclaimer-es'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -490,6 +556,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildLegalButton(String title, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.blue),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const Icon(Icons.open_in_new, size: 16, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openUrl(String urlString) async {
+    final uri = Uri.parse(urlString);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo abrir: $urlString')),
+        );
+      }
+    }
   }
 
   void _showPrivacyPolicy() {
@@ -557,12 +663,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Soporte Técnico'),
-        content: const Text(
-          'Para soporte técnico, contacta:\n\n'
-          'Email: soporte@tuguardian.com\n'
-          'Teléfono: +57 300 123 4567\n'
-          'Web: www.tuguardian.com/soporte',
+        title: Row(
+          children: const [
+            Icon(Icons.support_agent, color: Colors.blue, size: 28),
+            SizedBox(width: 12),
+            Text('Soporte Técnico'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Para ayuda o reportar problemas:',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            _buildContactItem(
+              Icons.email_outlined,
+              'Email',
+              '300hbk117@gmail.com',
+              () => _openUrl('mailto:300hbk117@gmail.com'),
+            ),
+            const SizedBox(height: 12),
+            _buildContactItem(
+              Icons.phone_outlined,
+              'Teléfono',
+              '+57 321 772 6074',
+              () => _openUrl('tel:+573217726074'),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 12),
+            const Text(
+              'Horario de atención:',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Lunes a Viernes\n9:00 AM - 6:00 PM (GMT-5)',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -570,6 +712,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Cerrar'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContactItem(IconData icon, String label, String value, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: Colors.blue),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
