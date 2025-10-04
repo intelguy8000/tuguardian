@@ -49,18 +49,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Protección
-            _buildSectionHeader('Protección', isDark),
-            const SizedBox(height: 12),
-            _buildSettingsCard(
-              isDark,
-              children: [
-                _buildRealModeSwitch(smsProvider, isDark),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
             // Notificaciones
             _buildSectionHeader('Notificaciones', isDark),
             const SizedBox(height: 12),
@@ -130,46 +118,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildRealModeSwitch(SMSProvider smsProvider, bool isDark) {
-    return ListTile(
-      title: Text(
-        'Protección en tiempo real',
-        style: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        smsProvider.isRealModeEnabled
-          ? '✅ Activa - ${smsProvider.allMessages.length} mensajes analizados'
-          : '⚙️ Inicializando...',
-        style: TextStyle(
-          color: smsProvider.isRealModeEnabled
-              ? Colors.green
-              : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      trailing: smsProvider.isRealModeEnabled
-        ? Icon(
-            Icons.shield_outlined,
-            color: Colors.green,
-            size: 28,
-          )
-        : SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-      onTap: null,
     );
   }
 
