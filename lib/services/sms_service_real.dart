@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:telephony/telephony.dart';
 import 'package:permission_handler/permission_handler.dart';

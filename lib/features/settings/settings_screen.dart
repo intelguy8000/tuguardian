@@ -18,7 +18,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final smsProvider = Provider.of<SMSProvider>(context);
     final isDark = themeProvider.isDarkMode;
     
     return Scaffold(

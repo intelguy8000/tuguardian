@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../shared/providers/theme_provider.dart';
-import '../../shared/providers/sms_provider.dart';
 import '../../shared/models/sms_message.dart';
 import '../../core/app_colors.dart';
 import '../../detection/entities/official_entities_service.dart';
