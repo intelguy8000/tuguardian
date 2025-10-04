@@ -14,12 +14,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _autoBlock = false;
-  bool _biometricLock = false;
-  double _sensitivityLevel = 0.8;
-  String _selectedLanguage = 'Español';
-  bool _shareAnonymousData = false;
-  bool _isLoadingRealMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -62,22 +56,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               isDark,
               children: [
                 _buildRealModeSwitch(smsProvider, isDark),
-                _buildDivider(isDark),
-                _buildSwitchTile(
-                  'Bloqueo automático',
-                  'Bloquea amenazas automáticamente',
-                  _autoBlock,
-                  (value) => setState(() => _autoBlock = value),
-                  isDark,
-                ),
-                _buildDivider(isDark),
-                _buildSliderTile(
-                  'Nivel de sensibilidad',
-                  'Ajusta qué tan estricto es el filtro',
-                  _sensitivityLevel,
-                  (value) => setState(() => _sensitivityLevel = value),
-                  isDark,
-                ),
               ],
             ),
 
@@ -101,32 +79,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 24),
 
-            // Privacidad y Seguridad
-            _buildSectionHeader('Privacidad y Seguridad', isDark),
-            const SizedBox(height: 12),
-            _buildSettingsCard(
-              isDark,
-              children: [
-                _buildSwitchTile(
-                  'Bloqueo biométrico',
-                  'Usa huella/Face ID para abrir la app',
-                  _biometricLock,
-                  (value) => setState(() => _biometricLock = value),
-                  isDark,
-                ),
-                _buildDivider(isDark),
-                _buildSwitchTile(
-                  'Compartir datos anónimos',
-                  'Ayuda a mejorar la detección',
-                  _shareAnonymousData,
-                  (value) => setState(() => _shareAnonymousData = value),
-                  isDark,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
             // Apariencia
             _buildSectionHeader('Apariencia', isDark),
             const SizedBox(height: 12),
@@ -138,15 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Cambia el tema de la aplicación',
                   isDark,
                   (value) => themeProvider.toggleTheme(),
-                  isDark,
-                ),
-                _buildDivider(isDark),
-                _buildDropdownTile(
-                  'Idioma',
-                  'Selecciona el idioma de la app',
-                  _selectedLanguage,
-                  ['Español', 'English', 'Français', 'Português'],
-                  (value) => setState(() => _selectedLanguage = value!),
                   isDark,
                 ),
               ],
@@ -226,44 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),
-      onTap: smsProvider.isRealModeEnabled
-          ? null
-          : () async {
-              // If not enabled yet, try to enable on tap
-              setState(() => _isLoadingRealMode = true);
-              try {
-                await smsProvider.enableRealMode();
-                if (mounted) {
-                  int totalMessages = smsProvider.realMessages.length;
-                  int threats = smsProvider.realMessages.where((m) => m.isDangerous).length;
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '✅ Protección activada!\n'
-                        '📱 $totalMessages mensajes analizados\n'
-                        '${threats > 0 ? "🚫 $threats amenazas bloqueadas" : "✅ Ninguna amenaza detectada"}'
-                      ),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 4),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('❌ Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              } finally {
-                if (mounted) {
-                  setState(() => _isLoadingRealMode = false);
-                }
-              }
-            },
+      onTap: null,
     );
   }
 
