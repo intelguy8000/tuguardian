@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.guardian_sms"
+    namespace = "io.github.intelguy8000.tuguardian"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.guardian_sms"
+        applicationId = "io.github.intelguy8000.tuguardian"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode

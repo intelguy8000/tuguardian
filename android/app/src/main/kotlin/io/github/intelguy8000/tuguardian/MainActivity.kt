@@ -1,4 +1,4 @@
-package com.example.guardian_sms
+package io.github.intelguy8000.tuguardian
 
 import android.content.Intent
 import android.net.Uri
