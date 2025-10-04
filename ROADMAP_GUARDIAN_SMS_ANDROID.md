@@ -1,377 +1,410 @@
-# 🛡️ Guardian SMS Android - Roadmap to 100% Production Ready
+# 🛡️ Guardian SMS Android - Roadmap ACTUALIZADO to 100% Production Ready
 
-**Target Launch:** Early December 2025 (Play Store Beta)
-**Timeline:** 3 weeks (Nov 18 - Dec 8)
-**Focus:** Complete SMS protection for Android, capitalize on December shopping season
-
----
-
-## 📊 CURRENT STATUS: ~75% Complete
-
-### ✅ COMPLETADO (Ya funciona)
-
-#### Core Detection Engine ✅
-- [x] **SMS Reading & Parsing** - Lee todos los SMS del dispositivo
-- [x] **Intent Detection** - Detecta intenciones (financial, credentials, urgency, prize)
-- [x] **Entity Recognition** - 27 entidades oficiales (bancos, e-commerce, shipping)
-- [x] **Link Extraction & Validation** - Extrae y valida URLs contra dominios oficiales
-- [x] **Risk Scoring** - Sistema de puntuación 0-100
-- [x] **Pattern Matching** - RegEx patterns para español + inglés
-- [x] **Holiday Detection** - Black Friday, Cyber Monday, Christmas patterns (NUEVO ✨)
-
-#### UI/UX ✅
-- [x] **Home Screen** - Lista de conversaciones con códigos de color
-- [x] **Message Detail** - Vista detallada con análisis TuGuardian
-- [x] **Conversation View** - Chat-style con burbujas
-- [x] **Dark Mode** - Tema claro/oscuro funcional
-- [x] **Color Coding** - Rojo (peligro), Azul (protección), Verde (seguro)
-- [x] **Settings Screen** - Configuración completa
-
-#### Security ✅
-- [x] **OS-level Link Blocking** - Bloqueo en MainActivity.kt
-- [x] **Domain Whitelist** - 27+ dominios oficiales permitidos
-- [x] **Protected Text Widget** - Links no clickeables en mensajes peligrosos
-
-#### Data Management ✅
-- [x] **Local Database** - SQLite con deletedMessages tracking
-- [x] **Real-time Updates** - Provider pattern con notifyListeners
-- [x] **Conversation Grouping** - Agrupa SMS por sender
-- [x] **Delete Functionality** - Elimina de DB local (no de Android system)
+**Target Launch:** Mid-Late December 2025 (Play Store Beta)
+**Last Updated:** 2025-12-04 (Estado Real Verificado)
+**Focus:** Complete SMS protection for Android, ready for Play Store submission
 
 ---
 
-## 🚧 EN PROGRESO (Falta completar)
+## 📊 CURRENT STATUS: ~85% Complete ✅
 
-### 🎯 PRIORIDAD CRÍTICA - Semana 1 (Nov 18-24)
+### ✅ COMPLETADO (Verificado funcionando)
 
-#### 1. **User Reporting System** - 40% ⚠️
-**Status:** No existe funcionalidad de reporting
+#### Core Detection Engine ✅ 100%
+- [x] **SMS Reading & Parsing** - Lee todos los SMS del dispositivo ✅
+- [x] **Intent Detection** - Detecta intenciones (financial, credentials, urgency, prize) ✅
+- [x] **Entity Recognition** - 27+ entidades oficiales (bancos, e-commerce, shipping) ✅
+- [x] **Link Extraction & Validation** - Extrae y valida URLs contra dominios oficiales ✅
+- [x] **Risk Scoring** - Sistema de puntuación 0-100 ✅
+- [x] **Pattern Matching** - RegEx patterns para español + inglés ✅
+- [x] **Holiday Detection** - Black Friday, Cyber Monday, Christmas patterns ✅
+
+#### UI/UX ✅ 100%
+- [x] **Splash Screen** - Con logo TuGuardian y loading indicator ✅
+- [x] **Onboarding Flow** - 4 pantallas completas con permisos ✅
+- [x] **Home Screen** - Lista de conversaciones con códigos de color ✅
+- [x] **Message Detail** - Vista detallada con análisis TuGuardian ✅
+- [x] **Conversation View** - Chat-style con burbujas ✅
+- [x] **Settings Screen** - Configuración limpia (solo features implementados) ✅
+- [x] **Dark Mode** - Tema claro/oscuro funcional ✅
+- [x] **Color Coding** - Rojo (peligro), Azul (protección), Verde (seguro) ✅
+- [x] **Stats Card** - Card de estadísticas en Home con métricas visuales ✅
+
+#### Security ✅ 100%
+- [x] **OS-level Link Blocking** - Bloqueo en MainActivity.kt ✅
+- [x] **Domain Whitelist** - 27+ dominios oficiales permitidos ✅
+- [x] **Protected Text Widget** - Links no clickeables en mensajes peligrosos ✅
+- [x] **Local-only Processing** - Todo se procesa en el dispositivo ✅
+
+#### Data Management ✅ 100%
+- [x] **Local Database** - SQLite con deletedMessages tracking ✅
+- [x] **Real-time Updates** - Provider pattern con notifyListeners ✅
+- [x] **Conversation Grouping** - Agrupa SMS por sender ✅
+- [x] **Delete Functionality** - Elimina de DB local (disclaimer explicado) ✅
+
+#### Legal Compliance ✅ 100%
+- [x] **Privacy Policy** - En español, hosted en GitHub Pages ✅
+- [x] **Terms of Service** - Completos en español ✅
+- [x] **Disclaimer** - Bottom sheet al primer inicio + docs ✅
+- [x] **GitHub Pages** - https://intelguy8000.github.io/tuguardian/ ✅
+- [x] **Legal Links in Settings** - Abre documentos legales ✅
+
+#### Notifications ✅ 90%
+- [x] **Notification Service** - Implementado completamente ✅
+- [x] **Danger Alerts** - Notificaciones críticas para amenazas ✅
+- [x] **Safe Message Grouping** - Notificaciones agrupadas diarias ✅
+- [x] **Notification Channels** - 3 canales (safe, danger, unread) ✅
+- [x] **Permission Request** - Se solicita en onboarding ✅
+- [ ] **Integration in SMS Flow** - Falta conectar con SMSProvider ⚠️
+
+#### Branding & Assets ⚠️ 60%
+- [x] **App Icon** - Iconos personalizados en todas las densidades ✅
+- [x] **Splash Logo** - splash_logo.png en assets ✅
+- [x] **App Name** - "TuGuardian" configurado ✅
+- [ ] **Adaptive Icon** - Falta configuración Android 8+ ⚠️
+- [ ] **Play Store Feature Graphic** - No existe ❌
+- [ ] **Screenshots** - No preparados para Play Store ❌
+
+---
+
+## 🚧 PENDIENTE - CRÍTICO PARA PLAY STORE
+
+### 🎯 PRIORIDAD 1 - Esta Semana (Dec 4-8)
+
+#### 1. **App Icon & Branding Refinement** - 60% → 100% ⚠️
+**Status:** Tiene iconos básicos pero falta adaptive icon
 **Necesario:**
-- [ ] UI para reportar falsos positivos/negativos
-- [ ] Backend Firebase para almacenar reportes
-- [ ] Gamificación con puntos/badges
-- [ ] Estadísticas de contribuciones del usuario
+- [ ] Crear adaptive icon (foreground + background layers)
+- [ ] Actualizar android/app/src/main/res/mipmap-anydpi-v26/
+- [ ] Probar en dispositivos Android 8+
+- [ ] Verificar que se vea bien en diferentes launchers
 
-**Blocker:** Ninguno
-**Tiempo estimado:** 12-15 horas
-**Impacto:** ALTO - Mejora continua del modelo + engagement
+**Tiempo estimado:** 2-3 horas
+**Impacto:** MEDIO - Mejora percepción profesional en Android moderno
 
 ---
 
-#### 2. **Onboarding Flow** - 0% ❌
-**Status:** No existe onboarding, app inicia directo en home
+#### 2. **Integrate Notification System** - 90% → 100% ⚠️
+**Status:** NotificationService existe pero no está conectado
 **Necesario:**
-- [ ] Pantalla de bienvenida con mensaje de Navidad
-- [ ] Tutorial de 3-4 pasos (60 segundos)
-- [ ] Explicación de permisos SMS
-- [ ] Configuración inicial (tema, idioma)
-- [ ] Skip button para usuarios avanzados
+- [ ] Conectar NotificationService con SMSProvider
+- [ ] Llamar `showDangerAlert()` cuando se detecta amenaza
+- [ ] Llamar `showSafeMessageGrouped()` para mensajes seguros
+- [ ] Probar flujo completo end-to-end
+- [ ] Configurar navegación desde notificación a mensaje
 
-**Blocker:** Ninguno
-**Tiempo estimado:** 8-10 horas
-**Impacto:** ALTO - Primera impresión crítica para Play Store
+**Tiempo estimado:** 3-4 horas
+**Impacto:** ALTO - Alertas críticas para el usuario
 
 ---
 
-#### 3. **Legal Compliance** - 0% ❌
-**Status:** No hay T&C, Privacy Policy, ni disclaimer
+#### 3. **Play Store Signed Release** - 0% → 100% ❌
+**Status:** Actualmente solo debug builds
 **Necesario:**
-- [ ] Disclaimer visible: "Guardian puede cometer errores, no garantía 100%"
-- [ ] Términos y Condiciones (usar generador como Termly)
-- [ ] Privacy Policy explicando procesamiento local
-- [ ] Pantalla "Acerca de" con versión + legal
-- [ ] Aceptación de T&C en onboarding
+- [ ] Generar keystore para firma de releases
+- [ ] Configurar signing config en build.gradle.kts
+- [ ] Generar AAB (Android App Bundle) firmado
+- [ ] Probar AAB en dispositivo real
+- [ ] Documentar proceso de release
 
-**Blocker:** Ninguno (usar templates)
-**Tiempo estimado:** 6-8 horas
-**Impacto:** CRÍTICO - Requerido por Play Store
+**Blocker:** Crear keystore
+**Tiempo estimado:** 2-3 horas
+**Impacto:** CRÍTICO - Sin esto no se puede publicar
 
 ---
 
-### 🎯 PRIORIDAD ALTA - Semana 2 (Nov 25 - Dec 1)
-
-#### 4. **Statistics Dashboard** - 20% ⚠️
-**Status:** Settings muestra conteo básico, falta dashboard completo
+#### 4. **Application ID Update** - IMPORTANTE ⚠️
+**Status:** Usa ID temporal "com.example.guardian_sms"
 **Necesario:**
-- [ ] Pantalla dedicada de estadísticas
-- [ ] Gráficas: mensajes protegidos, enlaces bloqueados, amenazas por tipo
-- [ ] Timeline de protección (últimos 7/30 días)
-- [ ] Top entidades detectadas
-- [ ] Share button para compartir stats en redes
+- [ ] Cambiar a ID definitivo (ej: "com.tuguardian.app" o "com.juanandres.tuguardian")
+- [ ] Actualizar en build.gradle.kts
+- [ ] Actualizar en AndroidManifest.xml
+- [ ] Rebuild completo
 
-**Blocker:** Ninguno
-**Tiempo estimado:** 10-12 horas
-**Impacto:** ALTO - Marketing orgánico + engagement
-
----
-
-#### 5. **Performance Optimization** - 60% ⚠️
-**Status:** Funciona pero no está optimizado para miles de SMS
-**Necesario:**
-- [ ] Lazy loading en listas largas
-- [ ] Caching de detecciones previas
-- [ ] Background processing para análisis pesados
-- [ ] Memory profiling y leak detection
-- [ ] Battery usage optimization
-
-**Blocker:** Ninguno
-**Tiempo estimado:** 8-10 horas
-**Impacto:** MEDIO - Mejora UX en dispositivos con muchos SMS
+**NOTA:** Este cambio debe hacerse ANTES de subir a Play Store (no se puede cambiar después)
+**Tiempo estimado:** 1 hora
+**Impacto:** CRÍTICO - Play Store rechaza IDs "com.example.*"
 
 ---
 
-#### 6. **App Icon & Branding** - 40% ⚠️
-**Status:** Tiene icon genérico de Flutter
-**Necesario:**
-- [ ] Diseño profesional de icon (🛡️ + moderno)
-- [ ] Adaptive icon para Android
-- [ ] Splash screen con branding
-- [ ] Color palette consistency
-- [ ] Material Design 3 compliance
+### 🎯 PRIORIDAD 2 - Siguiente Semana (Dec 9-15)
 
-**Blocker:** Diseño gráfico (puede usar Figma + AI)
-**Tiempo estimado:** 6-8 horas
-**Impacto:** ALTO - Percepción profesional
-
----
-
-### 🎯 PRIORIDAD MEDIA - Semana 3 (Dec 2-8)
-
-#### 7. **Play Store Assets** - 0% ❌
+#### 5. **Play Store Assets** - 0% → 100% ❌
 **Status:** No existen assets para Play Store
 **Necesario:**
-- [ ] Screenshots (8 mínimo): Home, Detail, Settings, Stats, Onboarding
-- [ ] Feature Graphic (1024x500)
-- [ ] Promotional video (opcional pero recomendado)
-- [ ] Short description (<80 chars)
-- [ ] Full description (~4000 chars) con keywords
-- [ ] Categorización: Tools / Productivity
+- [ ] Screenshots (mínimo 2, recomendado 8):
+  - Home screen con conversaciones
+  - Message detail con análisis
+  - Onboarding screens
+  - Settings
+  - Stats card
+- [ ] Feature Graphic (1024x500px) - REQUERIDO
+- [ ] Promotional video 15-30seg (opcional)
+- [ ] App Description corta (<80 chars)
+- [ ] App Description larga (~4000 chars) con keywords SEO
+- [ ] Categoría: Tools o Productivity
 
-**Blocker:** App icon finalizado
-**Tiempo estimado:** 10-12 horas
+**Tiempo estimado:** 6-8 horas
 **Impacto:** CRÍTICO - Requerido para publicación
 
 ---
 
-#### 8. **Testing & QA** - 30% ⚠️
+#### 6. **Testing & QA** - 30% → 80% ⚠️
 **Status:** Testing manual básico, sin tests automatizados
 **Necesario:**
-- [ ] Unit tests para detection logic
-- [ ] Widget tests para UI crítica
-- [ ] Integration tests end-to-end
-- [ ] Testing en 3-4 dispositivos reales diferentes
-- [ ] Testing con 1000+ SMS reales
-- [ ] Beta testing con 5-10 usuarios externos
+- [ ] Unit tests para detection_service.dart (priority)
+- [ ] Integration test: SMS receive → detect → notify flow
+- [ ] Testing en 3+ dispositivos reales diferentes
+- [ ] Testing con 100+ SMS reales de diferentes bancos
+- [ ] Performance testing con 1000+ mensajes
+- [ ] Battery drain testing (24h usage)
+- [ ] Memory leak testing
 
-**Blocker:** Beta testers voluntarios
-**Tiempo estimado:** 12-15 horas
-**Impacto:** ALTO - Prevenir crashes en producción
+**Tiempo estimado:** 8-10 horas
+**Impacto:** ALTO - Prevenir crashes y reviews negativas
 
 ---
 
-#### 9. **Play Store Account & Submission** - 0% ❌
-**Status:** No hay cuenta de Play Store
+#### 7. **Play Store Account & Submission** - 0% → 100% ❌
+**Status:** No hay cuenta de Play Store creada
 **Necesario:**
-- [ ] Crear cuenta Google Play Developer ($25 one-time)
-- [ ] Configurar merchant account (si monetización futura)
-- [ ] Generar signed APK/AAB
-- [ ] Completar formulario de Play Store
-- [ ] Justificar permiso READ_SMS (crítico ⚠️)
-- [ ] Submit for review (puede tomar 3-7 días)
+- [ ] Crear cuenta Google Play Developer ($25 USD one-time)
+- [ ] Completar perfil de desarrollador
+- [ ] Configurar política de privacidad URL (done: GitHub Pages)
+- [ ] Completar formulario de app
+- [ ] **CRÍTICO:** Declaración de permisos READ_SMS:
+  - Justificar como "SMS anti-fraud/anti-phishing app"
+  - Explicar que es core functionality
+  - Demostrar procesamiento local (no servidores)
+  - Video demo mostrando detección
+- [ ] Submit for review (toma 3-7 días)
 
 **Blocker:** $25 USD disponibles
-**Tiempo estimado:** 4-6 horas
+**Tiempo estimado:** 4-6 horas iniciales + espera review
 **Impacto:** CRÍTICO - Sin esto no hay lanzamiento
 
 ---
 
-### 🎯 PRIORIDAD BAJA - Nice to Have
+### 🎯 NICE TO HAVE - Post-MVP
+
+#### 8. **User Reporting System** - 0% ❌
+**Status:** No existe funcionalidad
+**Necesario:**
+- [ ] UI para reportar falsos positivos/negativos
+- [ ] Backend Firebase para almacenar reportes
+- [ ] Gamificación con puntos/badges
+- [ ] Dashboard de estadísticas de contribuciones
+
+**Tiempo estimado:** 12-15 horas
+**Impacto:** MEDIO - Mejora continua pero no bloqueante para launch
+
+---
+
+#### 9. **Statistics Dashboard Screen** - 20% ❌
+**Status:** Existe StatsCard pero no screen dedicada
+**Necesario:**
+- [ ] Screen completa de estadísticas
+- [ ] Gráficas: mensajes/día, amenazas/semana
+- [ ] Timeline de protección
+- [ ] Top entidades detectadas
+- [ ] Share button para redes sociales
+
+**Tiempo estimado:** 8-10 horas
+**Impacto:** BAJO - Mejora engagement pero no crítico
+
+---
 
 #### 10. **Multi-language Support** - 0% ❌
 **Status:** Solo español actualmente
 **Necesario:**
-- [ ] Internacionalización (i18n) setup
-- [ ] Traducción inglés (priority)
-- [ ] Traducción portugués (Brazil - LatAm expansion)
-- [ ] UI para cambiar idioma en Settings
+- [ ] i18n setup con flutter_localizations
+- [ ] Traducción inglés (US market)
+- [ ] Traducción portugués (Brazil expansion)
+- [ ] UI para cambiar idioma
 
-**Blocker:** Ninguno
 **Tiempo estimado:** 8-10 horas
 **Impacto:** BAJO - Puede ser post-launch
 
 ---
 
-#### 11. **Notification System** - 0% ❌
-**Status:** No hay notificaciones
+#### 11. **Advanced Filters & Search** - 0% ❌
+**Status:** Home muestra todo sin filtros
 **Necesario:**
-- [ ] Notificación cuando se detecta amenaza
-- [ ] Badge count en app icon
-- [ ] Notification channels (Android O+)
-- [ ] Settings para controlar notificaciones
-
-**Blocker:** Ninguno
-**Tiempo estimado:** 6-8 horas
-**Impacto:** MEDIO - Mejora awareness pero no crítico
-
----
-
-#### 12. **Advanced Filters** - 0% ❌
-**Status:** Home muestra todo, sin filtros
-**Necesario:**
-- [ ] Filtrar por riesgo (peligroso, moderado, seguro)
-- [ ] Filtrar por entidad (Bancolombia, MercadoLibre, etc.)
+- [ ] Filtrar por nivel de riesgo
+- [ ] Filtrar por entidad
 - [ ] Búsqueda por texto
 - [ ] Ordenar por fecha/riesgo
 
-**Blocker:** Ninguno
 **Tiempo estimado:** 6-8 horas
-**Impacto:** BAJO - Mejora UX pero no esencial MVP
+**Impacto:** BAJO - UX improvement pero no esencial
 
 ---
 
-## 📅 TIMELINE DETALLADO
+## 📅 TIMELINE ACTUALIZADO
 
-### **Semana 1: Nov 18-24** (Foundation)
-**Total:** ~40 horas (8h/día × 5 días)
+### **Esta Semana: Dec 4-8** (Foundation & Critical Fixes)
+**Total:** ~20 horas
 
-| Día | Tarea | Horas |
-|-----|-------|-------|
-| Lun 18 | Legal Compliance (T&C, Privacy, Disclaimer) | 8h |
-| Mar 19 | Onboarding Flow (4 screens) | 8h |
-| Mié 20 | User Reporting System (UI + Firebase setup) | 8h |
-| Jue 21 | User Reporting System (gamificación + tests) | 8h |
-| Vie 22 | App Icon & Branding | 8h |
+| Prioridad | Tarea | Horas | Status |
+|-----------|-------|-------|--------|
+| 🔥 CRÍTICO | Change Application ID | 1h | ❌ |
+| 🔥 CRÍTICO | Configure Signed Release Build | 3h | ❌ |
+| ⚠️ ALTO | Integrate Notification System | 4h | ⚠️ 90% |
+| 💎 MEDIO | Adaptive Icon Implementation | 2h | ⚠️ 60% |
+| 💎 MEDIO | Testing on 3+ real devices | 4h | ⚠️ 30% |
+| 💡 BAJO | Code cleanup & documentation | 2h | ⚠️ 50% |
 
 **Entregables Semana 1:**
-- ✅ Legal compliance completo
-- ✅ Onboarding funcional
-- ✅ Sistema de reportes MVP
-- ✅ Branding profesional
+- ✅ App ID definitivo configurado
+- ✅ Signed AAB generado y probado
+- ✅ Notificaciones funcionando end-to-end
+- ✅ Adaptive icon implementado
 
 ---
 
-### **Semana 2: Nov 25 - Dec 1** (Polish & Optimization)
-**Total:** ~40 horas
+### **Próxima Semana: Dec 9-15** (Play Store Preparation)
+**Total:** ~25 horas
 
-| Día | Tarea | Horas |
-|-----|-------|-------|
-| Lun 25 | Statistics Dashboard | 8h |
-| Mar 26 | Performance Optimization | 8h |
-| Mié 27 | Testing & QA (unit + widget tests) | 8h |
-| Jue 28 | Testing en dispositivos reales | 8h |
-| Vie 29 | Bug fixes + refinements | 8h |
+| Prioridad | Tarea | Horas | Status |
+|-----------|-------|-------|--------|
+| 🔥 CRÍTICO | Create Play Store Account | 1h | ❌ |
+| 🔥 CRÍTICO | Prepare Play Store Assets | 8h | ❌ |
+| 🔥 CRÍTICO | Write App Descriptions (EN/ES) | 3h | ❌ |
+| ⚠️ ALTO | Comprehensive Testing & QA | 8h | ⚠️ 30% |
+| 💎 MEDIO | Bug fixes from testing | 4h | - |
+| 💡 BAJO | Marketing content preparation | 2h | ❌ |
 
 **Entregables Semana 2:**
-- ✅ Dashboard de stats funcional
-- ✅ App optimizada para performance
-- ✅ Test coverage >60%
-- ✅ Tested en 3+ dispositivos
+- ✅ Play Store listing completo
+- ✅ Screenshots y feature graphic listos
+- ✅ Testing QA >80% completo
+- ✅ App lista para submit
 
 ---
 
-### **Semana 3: Dec 2-8** (Launch Preparation)
-**Total:** ~40 horas
+### **Semana Launch: Dec 16-20** (Submission & Launch)
+**Total:** ~15 horas
 
-| Día | Tarea | Horas |
-|-----|-------|-------|
-| Lun 2 | Play Store assets (screenshots, graphics) | 8h |
-| Mar 3 | Play Store listing (descriptions, SEO) | 8h |
-| Mié 4 | Beta testing con usuarios externos | 8h |
-| Jue 5 | Final bug fixes + polish | 8h |
-| Vie 6 | Submit to Play Store | 8h |
+| Prioridad | Tarea | Horas | Status |
+|-----------|-------|-------|--------|
+| 🔥 CRÍTICO | Submit to Play Store | 2h | ❌ |
+| 🔥 CRÍTICO | Monitor review process | 2h/día | ❌ |
+| ⚠️ ALTO | Respond to Play Store feedback | 4h | - |
+| 💎 MEDIO | Final hotfixes if needed | 4h | - |
+| 💡 BAJO | Social media launch posts | 2h | ❌ |
 
 **Entregables Semana 3:**
-- ✅ Play Store listing completo
-- ✅ App submitted for review
-- ✅ Beta testers feedback incorporado
+- ✅ App submitted (Dec 16)
+- ✅ Review completada (Dec 18-20 estimado)
+- ✅ **🚀 PUBLIC BETA LAUNCH** (Dec 20-22)
 
 ---
 
-### **Semana 4: Dec 9-15** (Launch & Growth)
-**Total:** ~20 horas (review period)
+## 🎯 CRITICAL PATH (Bloqueadores para Launch)
 
-| Día | Tarea | Horas |
-|-----|-------|-------|
-| Lun 9 | Esperar aprobación Play Store (3-7 días) | 2h |
-| Mar 10 | Marketing content (social media posts) | 4h |
-| Mié 11 | Monitor reviews + responder usuarios | 4h |
-| Jue 12 | Hotfixes si necesario | 6h |
-| Vie 13 | **🚀 PUBLIC BETA LAUNCH** | 4h |
-
-**Entregables Semana 4:**
-- ✅ App live en Play Store
-- ✅ Primeros 50-100 usuarios
-- ✅ Feedback loop activo
-
----
-
-## 🎯 CRITICAL PATH (Bloqueadores)
-
-### Must-Have para Play Store Submission:
-1. **Legal Compliance** ❌ - Sin esto Google rechaza
-2. **Play Store Assets** ❌ - Requerido para listing
-3. **Signed APK/AAB** ⚠️ - Necesita keystore
-4. **Justificación READ_SMS** ❌ - Google muy estricto con este permiso
-5. **Privacy Policy URL** ❌ - Requerido en manifest
+### Must-Have ANTES de Submit:
+1. ✅ Legal Compliance (DONE)
+2. ❌ Application ID definitivo (NO "com.example.*")
+3. ❌ Signed AAB/APK con keystore propio
+4. ❌ Play Store Developer Account ($25)
+5. ❌ Feature Graphic 1024x500
+6. ❌ Mínimo 2 screenshots
+7. ✅ Privacy Policy URL (DONE - GitHub Pages)
+8. ❌ Justificación permiso READ_SMS (crítico ⚠️)
 
 ### Riesgo ALTO ⚠️:
-**Permiso READ_SMS:** Google puede rechazar si no justificas correctamente.
-**Mitigación:**
-- Enfatizar que es anti-smishing (security app)
-- Mostrar que NO enviamos SMS a servidores
-- Demostrar que es core functionality (no hay workaround)
-- Considerar aplicar como "Default SMS App" (más permisivo)
+**Permiso READ_SMS:** Google puede rechazar si no se justifica correctamente.
+
+**Estrategia de Mitigación:**
+- ✅ Enfatizar "Anti-Smishing Security App"
+- ✅ Demostrar procesamiento 100% local
+- ✅ Video demo mostrando detección funcionando
+- ✅ Explicar que READ_SMS es core functionality
+- ⚠️ Considerar: Mencionar que NO somos default SMS app (less intrusive)
 
 ---
 
-## 💰 PRESUPUESTO ESTIMADO
+## 💰 PRESUPUESTO TOTAL
 
 | Item | Costo | Status |
 |------|-------|--------|
-| Google Play Developer Account | $25 USD | ❌ Pendiente |
-| App Icon Design (Figma/Canva Pro) | $0-15 USD | ❌ Pendiente |
+| Google Play Developer Account | $25 USD | ❌ REQUERIDO |
+| App Icon/Graphics Design | $0 (DIY) | ✅ DONE |
 | Firebase (free tier) | $0 | ✅ Suficiente |
-| Legal T&C Generator (Termly) | $0-100 USD | ❌ Pendiente |
-| **TOTAL** | **$25-140 USD** | |
+| Legal Docs (GitHub Pages) | $0 | ✅ DONE |
+| **TOTAL** | **$25 USD** | |
 
 ---
 
-## 📈 SUCCESS METRICS (Semana de Launch)
+## 📈 SUCCESS METRICS (Primera Semana Post-Launch)
 
-- 🎯 50-100 instalaciones (beta privada)
-- 🎯 <1% crash rate
-- 🎯 >4.0★ rating
-- 🎯 10+ user reports submitted
-- 🎯 5+ detectiones correctas validadas por usuarios
+- 🎯 **50-100 instalaciones** (beta privada inicial)
+- 🎯 **<2% crash rate**
+- 🎯 **>4.0★ rating** promedio
+- 🎯 **10+ reviews positivas** mencionando protección efectiva
+- 🎯 **5+ amenazas reales bloqueadas** validadas por usuarios
 
 ---
 
 ## 🚀 PRÓXIMOS PASOS INMEDIATOS
 
-### AHORA MISMO:
-1. ✅ **Roadmap completo** (este documento)
+### HOY (Dec 4):
+1. ❌ **Cambiar Application ID** a definitivo
+2. ❌ **Crear keystore** para firma de releases
+3. ⚠️ **Conectar NotificationService** con SMSProvider
 
-### HOY (Nov 18):
-2. Crear cuenta Google Play Developer ($25)
-3. Comenzar Legal Compliance (T&C generator)
-4. Diseñar onboarding flow (wireframes)
+### MAÑANA (Dec 5):
+4. ❌ **Implementar adaptive icon**
+5. ❌ **Generar signed AAB** y probar
+6. ❌ **Testing en 2-3 dispositivos** reales diferentes
 
-### ESTA SEMANA:
-5. Implementar onboarding completo
-6. Sistema de reporting MVP
-7. App icon profesional
-
----
-
-## ❓ PREGUNTAS ABIERTAS
-
-1. **¿Tienes los $25 USD para Play Store account?** → Si no, podemos usar mi cuenta temporal
-2. **¿Quieres usar Termly ($100/año) para legal docs o templates gratis?** → Gratis para MVP
-3. **¿Tienes beta testers voluntarios?** → Familia, amigos para testing
-4. **¿Prefieres diseñar icon tu mismo o usar Figma/AI?** → A decidir
-5. **¿Backend Firebase o empezar con local-only?** → Firebase free tier suficiente
+### ESTA SEMANA (Dec 6-8):
+7. ❌ **Crear cuenta Play Store** ($25)
+8. ❌ **Preparar screenshots** (mínimo 4)
+9. ❌ **Escribir descripciones** ES/EN
 
 ---
 
-**Última actualización:** 2025-11-18
-**Próxima revisión:** 2025-11-25 (fin semana 1)
+## ❓ PREGUNTAS CLAVE PARA RESOLVER
+
+1. **¿Cuál será el Application ID definitivo?**
+   - Sugerencia: `com.tuguardian.app` o `com.juanandres.tuguardian`
+
+2. **¿Tienes los $25 USD para Play Store account?**
+   - ✅ Si → Crear cuenta ASAP
+   - ❌ No → Buscar alternativa o postponer
+
+3. **¿Nombre de dominio propio o seguir con GitHub Pages?**
+   - GitHub Pages funciona perfectamente para privacy policy
+   - Opcional: Comprar tuguardian.com ($12/año)
+
+4. **¿Target de launch?**
+   - Optimista: Dec 20 (2 semanas)
+   - Realista: Dec 27 (3 semanas)
+   - Conservador: Jan 3, 2026 (4 semanas)
+
+---
+
+## 🎉 RESUMEN EJECUTIVO
+
+**Estado Actual:** La app está **85% completa** y funcionalmente lista. El core engine de detección, UI/UX, legal compliance y seguridad están 100% implementados.
+
+**Gaps Críticos:**
+- Application ID temporal (fácil fix, 1h)
+- Signed release build (necesita keystore, 2-3h)
+- Play Store assets (screenshots, feature graphic, 6-8h)
+- Play Store account ($25 + tiempo setup)
+
+**Tiempo Estimado al Launch:** 2-3 semanas (Dec 16-27)
+
+**Confianza de Aprobación Play Store:** 70%
+- ✅ App es legítima anti-smishing tool
+- ✅ Legal compliance completo
+- ⚠️ Permiso READ_SMS necesita buena justificación
+- ✅ Procesamiento local (no servidor) es positivo
+
+---
+
+**Última actualización:** 2025-12-04 (Revisión completa del código)
+**Próxima revisión:** 2025-12-08 (fin de semana crítica)
+**Responsable:** Juan Andrés García
