@@ -16,7 +16,7 @@ dependencies:
   
   # Notificaciones - CRÍTICO PARA ALERTAS
   flutter_local_notifications: ^17.2.3
-  flutter_app_badger: ^1.5.0
+  # flutter_app_badger: ^1.5.0  # Temporalmente deshabilitado (discontinued, incompatible con API 35)
 
   # Background tasks - CRÍTICO PARA LISTENER
   # workmanager: ^0.5.1

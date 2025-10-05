@@ -1,4 +1,4 @@
-import 'package:flutter_app_badger/flutter_app_badger.dart';
+// import 'package:flutter_app_badger/flutter_app_badger.dart'; // Temporarily disabled (discontinued)
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Service to manage app icon badge counter for unread messages
@@ -10,19 +10,13 @@ class BadgeService {
   BadgeService._internal();
 
   /// Update badge with specific count
-  /// Uses both flutter_app_badger AND notification system for maximum compatibility
+  /// Uses notification system for badge display (works on Samsung/modern Android)
   Future<void> updateBadge(int count) async {
     try {
-      // Method 1: Try flutter_app_badger (works on some launchers)
-      try {
-        if (count <= 0) {
-          await FlutterAppBadger.removeBadge();
-        } else {
-          await FlutterAppBadger.updateBadgeCount(count);
-        }
-      } catch (e) {
-        print('⚠️ flutter_app_badger failed: $e');
-      }
+      // Method 1: flutter_app_badger temporarily disabled (discontinued package)
+      // TODO: Replace with alternative badge solution if needed
+
+      // Method 2 (now primary): Use notification badge (works on Samsung/modern Android)
 
       // Method 2: Use notification badge (works on Samsung/modern Android)
       if (count <= 0) {
