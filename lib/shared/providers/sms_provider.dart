@@ -5,6 +5,7 @@ import '../../services/detection_service.dart';
 import '../../services/sms_listener_service.dart';
 import '../../services/database_service.dart';
 import '../../services/badge_service.dart';
+import '../../services/blocked_senders_service.dart';
 
 class SMSProvider with ChangeNotifier {
   // LISTAS SEPARADAS
@@ -25,8 +26,17 @@ class SMSProvider with ChangeNotifier {
   
   Function(BuildContext, SMSMessage)? onThreatDetected;
   
-  // GETTERS - VISTA UNIFICADA
+  // GETTERS - VISTA UNIFICADA (con filtro de bloqueados)
   List<SMSMessage> get allMessages {
+    List<SMSMessage> combined = [
+      ..._realMessages,
+      ..._demoMessages,
+    ];
+    return _filterBlockedSenders(combined)..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  }
+
+  // Obtener TODOS los mensajes sin filtrar (para configuración)
+  List<SMSMessage> get allMessagesUnfiltered {
     List<SMSMessage> combined = [
       ..._realMessages,
       ..._demoMessages,
@@ -84,6 +94,7 @@ class SMSProvider with ChangeNotifier {
   SMSProvider() {
     _loadDemoMessages();
     _autoEnableRealMode(); // Auto-enable real-time protection
+    BlockedSendersService.initialize(); // Initialize blocked senders
   }
 
   /// Auto-enable real mode on app start
@@ -637,5 +648,64 @@ class SMSProvider with ChangeNotifier {
       print('❌ Error eliminando conversaciones: $e');
       throw e;
     }
+  }
+
+  /// BLOCKED SENDERS FUNCTIONALITY
+
+  /// Block a sender (hide their messages from view)
+  Future<bool> blockSender(String sender, {String reason = 'Bloqueado por el usuario'}) async {
+    bool success = await BlockedSendersService.blockSender(sender, reason: reason);
+    if (success) {
+      notifyListeners(); // Refresh UI to hide messages
+    }
+    return success;
+  }
+
+  /// Unblock a sender
+  Future<bool> unblockSender(String sender) async {
+    bool success = await BlockedSendersService.unblockSender(sender);
+    if (success) {
+      notifyListeners(); // Refresh UI to show messages again
+    }
+    return success;
+  }
+
+  /// Check if a sender is blocked
+  Future<bool> isSenderBlocked(String sender) async {
+    return await BlockedSendersService.isBlocked(sender);
+  }
+
+  /// Get list of all blocked senders
+  Future<List<String>> getBlockedSenders() async {
+    return await BlockedSendersService.getBlockedSenders();
+  }
+
+  /// Get reason why a sender was blocked
+  Future<String?> getBlockReason(String sender) async {
+    return await BlockedSendersService.getBlockReason(sender);
+  }
+
+  /// Get count of blocked senders
+  Future<int> getBlockedSendersCount() async {
+    return await BlockedSendersService.getBlockedCount();
+  }
+
+  /// Filter messages to exclude blocked senders
+  List<SMSMessage> _filterBlockedSenders(List<SMSMessage> messages) {
+    // If no blocked senders, return all messages
+    if (BlockedSendersService._cachedBlockedSenders.isEmpty) {
+      return messages;
+    }
+
+    // Filter out messages from blocked senders
+    return messages.where((msg) {
+      String normalized = BlockedSendersService._normalizeSender(msg.sender);
+      return !BlockedSendersService._cachedBlockedSenders.contains(normalized);
+    }).toList();
+  }
+
+  /// Get statistics about blocked senders
+  Future<Map<String, dynamic>> getBlockingStats() async {
+    return await BlockedSendersService.getBlockingStats();
   }
 }

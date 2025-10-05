@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../shared/providers/theme_provider.dart';
+import '../../shared/providers/sms_provider.dart';
 import '../../shared/models/sms_message.dart';
 import '../../core/app_colors.dart';
 import '../../detection/entities/official_entities_service.dart';
@@ -99,12 +100,37 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.info_outline,
-              color: AppColors.primary,
-            ),
-            onPressed: () => _showMessageInfo(),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: AppColors.primary),
+            onSelected: (value) async {
+              if (value == 'block') {
+                await _blockSender(context);
+              } else if (value == 'info') {
+                _showMessageInfo();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'info',
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 20),
+                    SizedBox(width: 12),
+                    Text('Información del mensaje'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('Bloquear remitente', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1213,6 +1239,141 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
         backgroundColor: Colors.red.shade700,
         duration: Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Block sender dialog and action
+  Future<void> _blockSender(BuildContext context) async {
+    final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+
+    // Check if already blocked
+    bool isBlocked = await smsProvider.isSenderBlocked(widget.message.sender);
+
+    if (isBlocked) {
+      // Show unblock dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 12),
+              Expanded(child: Text('Remitente bloqueado')),
+            ],
+          ),
+          content: Text(
+            '${widget.message.sender} ya está bloqueado.\n\n¿Deseas desbloquearlo?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await smsProvider.unblockSender(widget.message.sender);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✅ Remitente desbloqueado'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: Text('Desbloquear'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Show block confirmation dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.block, color: Colors.red),
+            SizedBox(width: 12),
+            Expanded(child: Text('Bloquear remitente')),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('¿Deseas bloquear todos los mensajes de este remitente?'),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Remitente:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    widget.message.sender,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              '• Los mensajes de este remitente se ocultarán\n• Puedes desbloquearlo en cualquier momento\n• Los SMS reales NO se eliminan del sistema',
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await smsProvider.blockSender(
+                widget.message.sender,
+                reason: 'Bloqueado desde detalle de mensaje',
+              );
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back to messages list
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text('Remitente bloqueado: ${widget.message.sender}'),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: Colors.red,
+                  action: SnackBarAction(
+                    label: 'DESHACER',
+                    textColor: Colors.white,
+                    onPressed: () async {
+                      await smsProvider.unblockSender(widget.message.sender);
+                    },
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('Bloquear', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
