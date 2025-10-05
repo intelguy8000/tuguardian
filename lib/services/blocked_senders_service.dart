@@ -10,6 +10,10 @@ class BlockedSendersService {
   static Set<String> _cachedBlockedSenders = {};
   static bool _cacheInitialized = false;
 
+  // Getters públicos para acceso externo
+  static Set<String> get cachedBlockedSenders => _cachedBlockedSenders;
+  static bool get isCacheEmpty => _cachedBlockedSenders.isEmpty;
+
   /// Inicializar cache al arrancar la app
   static Future<void> initialize() async {
     if (_cacheInitialized) return;
@@ -25,14 +29,14 @@ class BlockedSendersService {
   /// Verificar si un sender está bloqueado
   static Future<bool> isBlocked(String sender) async {
     await initialize(); // Asegurar inicialización
-    return _cachedBlockedSenders.contains(_normalizeSender(sender));
+    return _cachedBlockedSenders.contains(normalizeSender(sender));
   }
 
   /// Bloquear un sender
   static Future<bool> blockSender(String sender, {String reason = 'Bloqueado por el usuario'}) async {
     await initialize();
 
-    String normalized = _normalizeSender(sender);
+    String normalized = normalizeSender(sender);
 
     // Si ya está bloqueado, no hacer nada
     if (_cachedBlockedSenders.contains(normalized)) {
@@ -56,7 +60,7 @@ class BlockedSendersService {
   static Future<bool> unblockSender(String sender) async {
     await initialize();
 
-    String normalized = _normalizeSender(sender);
+    String normalized = normalizeSender(sender);
 
     // Si no está bloqueado, no hacer nada
     if (!_cachedBlockedSenders.contains(normalized)) {
@@ -86,7 +90,7 @@ class BlockedSendersService {
   static Future<String?> getBlockReason(String sender) async {
     await initialize();
 
-    String normalized = _normalizeSender(sender);
+    String normalized = normalizeSender(sender);
     if (!_cachedBlockedSenders.contains(normalized)) {
       return null;
     }
@@ -141,7 +145,7 @@ class BlockedSendersService {
     final prefs = await SharedPreferences.getInstance();
 
     for (var entry in senders.entries) {
-      String normalized = _normalizeSender(entry.key);
+      String normalized = normalizeSender(entry.key);
       _cachedBlockedSenders.add(normalized);
       await prefs.setString('$_blockReasonPrefix$normalized', entry.value);
     }
@@ -153,7 +157,7 @@ class BlockedSendersService {
 
   /// Normalizar número de teléfono para consistencia
   /// Remueve espacios, guiones, paréntesis, prefijos internacionales
-  static String _normalizeSender(String sender) {
+  static String normalizeSender(String sender) {
     // Remover caracteres especiales
     String normalized = sender
         .replaceAll(RegExp(r'[\s\-\(\)\+]'), '')

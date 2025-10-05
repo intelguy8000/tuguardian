@@ -693,14 +693,14 @@ class SMSProvider with ChangeNotifier {
   /// Filter messages to exclude blocked senders
   List<SMSMessage> _filterBlockedSenders(List<SMSMessage> messages) {
     // If no blocked senders, return all messages
-    if (BlockedSendersService._cachedBlockedSenders.isEmpty) {
+    if (BlockedSendersService.isCacheEmpty) {
       return messages;
     }
 
     // Filter out messages from blocked senders
     return messages.where((msg) {
-      String normalized = BlockedSendersService._normalizeSender(msg.sender);
-      return !BlockedSendersService._cachedBlockedSenders.contains(normalized);
+      String normalized = BlockedSendersService.normalizeSender(msg.sender);
+      return !BlockedSendersService.cachedBlockedSenders.contains(normalized);
     }).toList();
   }
 
