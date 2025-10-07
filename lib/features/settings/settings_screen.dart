@@ -48,6 +48,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Protección (NUEVO)
+            _buildSectionHeader('Protección', isDark),
+            const SizedBox(height: 12),
+            _buildProtectionCard(isDark),
+
+            const SizedBox(height: 24),
+
             // Notificaciones
             _buildSectionHeader('Notificaciones', isDark),
             const SizedBox(height: 12),
@@ -607,6 +614,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// NUEVO: Card de protección con botón para activar modo real
+  Widget _buildProtectionCard(bool isDark) {
+    final smsProvider = Provider.of<SMSProvider>(context);
+    final isProtectionActive = smsProvider.isRealModeEnabled;
+    final realMessageCount = smsProvider.realMessages.length;
+
+    return _buildSettingsCard(
+      isDark,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    isProtectionActive ? Icons.shield : Icons.shield_outlined,
+                    color: isProtectionActive ? Colors.green : Colors.orange,
+                    size: 32,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isProtectionActive ? 'Protección Activa' : 'Protección Inactiva',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isProtectionActive
+                              ? '$realMessageCount SMS analizados'
+                              : 'Activa la protección para analizar tus SMS',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isProtectionActive ? null : () async {
+                    // Mostrar loading
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+
+                    // Activar protección
+                    bool success = await smsProvider.enableRealMode();
+
+                    // Cerrar loading
+                    Navigator.pop(context);
+
+                    // Mostrar resultado
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? '✅ Protección activada - ${smsProvider.realMessages.length} SMS cargados'
+                              : '❌ Error activando protección',
+                        ),
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isProtectionActive ? Colors.grey : Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    isProtectionActive ? 'Protección Activa' : 'Activar Protección',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
