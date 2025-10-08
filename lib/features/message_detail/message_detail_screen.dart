@@ -64,10 +64,13 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
     final isThreat = widget.message.isQuarantined || widget.message.isDangerous;
     final hasCallToAction = widget.message.suspiciousElements.isNotEmpty;
     final isVerification = _isVerificationMessage();
-    final unreadCount = smsProvider.unreadCount;
 
-    // DEBUG: Print badge info
-    print('🔔 Badge Debug: unreadCount=$unreadCount, realMessages=${smsProvider.realMessages.length}');
+    // BADGE: Contar mensajes no leídos de OTROS remitentes (excluir actual)
+    final otherUnreadCount = smsProvider.realMessages
+        .where((msg) =>
+            msg.sender != widget.message.sender &&
+            !smsProvider.isMessageRead(msg.id))
+        .length;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
@@ -87,7 +90,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             // Badge contador en esquina superior izquierda
-            if (unreadCount > 0)
+            if (otherUnreadCount > 0)
               Positioned(
                 left: 32,
                 top: 8,
@@ -103,7 +106,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      unreadCount > 99 ? '99+' : '$unreadCount',
+                      otherUnreadCount > 99 ? '99+' : '$otherUnreadCount',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,

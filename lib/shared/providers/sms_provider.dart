@@ -599,6 +599,11 @@ class SMSProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Check if a message is read
+  bool isMessageRead(String messageId) {
+    return _readMessageIds.contains(messageId);
+  }
+
   /// Mark messages from specific senders as unread
   void markMessagesAsUnread(List<String> senders) {
     // Find all messages from these senders and mark as unread
