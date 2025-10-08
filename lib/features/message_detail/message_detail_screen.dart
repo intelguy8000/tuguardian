@@ -66,54 +66,53 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
     final isVerification = _isVerificationMessage();
     final unreadCount = smsProvider.unreadCount;
 
+    // DEBUG: Print badge info
+    print('🔔 Badge Debug: unreadCount=$unreadCount, realMessages=${smsProvider.realMessages.length}');
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
         elevation: 0,
-        leadingWidth: 80, // Más espacio para badge
-        leading: Row(
+        leadingWidth: 90, // Más espacio para badge
+        leading: Stack(
+          alignment: Alignment.centerLeft,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.primary,
-                    size: 18,
+            IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: AppColors.primary,
+                size: 18,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            // Badge contador en esquina superior izquierda
+            if (unreadCount > 0)
+              Positioned(
+                left: 32,
+                top: 8,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                // Badge contador de no leídos (esquina superior derecha del botón)
-                if (unreadCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      constraints: BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      child: Center(
-                        child: Text(
-                          unreadCount > 99 ? '99+' : '$unreadCount',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                  constraints: BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
+                  child: Center(
+                    child: Text(
+                      unreadCount > 99 ? '99+' : '$unreadCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+              ),
           ],
         ),
         title: Column(
@@ -464,7 +463,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
           ),
           child: Stack(
             children: [
-              // Mensaje real (con cola estilo historieta en esquina inferior izquierda)
+              // Mensaje entrante (izquierda) - Cola apunta a la IZQUIERDA ◀
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -473,7 +472,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     topLeft: Radius.circular(18),
                     topRight: Radius.circular(18),
                     bottomRight: Radius.circular(18),
-                    bottomLeft: Radius.circular(0), // Cola pronunciada estilo speech bubble
+                    bottomLeft: Radius.circular(0), // Cola apunta IZQUIERDA ◀
                   ),
                   border: containerBorder,
                 ),

@@ -51,8 +51,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final smsProvider = Provider.of<SMSProvider>(context);
     final isDark = themeProvider.isDarkMode;
-    
+    final unreadCount = smsProvider.unreadCount;
+
+    print('🏠 HOME DEBUG: unreadCount=$unreadCount');
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
       appBar: AppBar(
