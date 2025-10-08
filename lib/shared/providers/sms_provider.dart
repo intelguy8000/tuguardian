@@ -447,6 +447,16 @@ class SMSProvider with ChangeNotifier {
         DateTime.now().subtract(Duration(days: 30)),
       ).copyWith(isDemo: true),
 
+      // ⛔ CASO REAL: Mensaje que recibió el padre del desarrollador (70 años)
+      // Este mensaje lo asustó tanto que corrió al cajero a cambiar su clave
+      // EXACTAMENTE el tipo de fraude que TuGuardian debe prevenir
+      DetectionService.analyzeMessage(
+        'critical_dad_case',
+        '87400',
+        'Bancolombia te notifica que la Clave Principal fue generada exitosamente. Si desconoces esta solicitud, comunicate de inmediato con nuestra linea 0345109095/018000931987.',
+        DateTime.now().subtract(Duration(days: 1)), // Hace 1 día (reciente)
+      ).copyWith(isDemo: true),
+
       DetectionService.analyzeMessage(
         'new_9',
         'APPLE',
