@@ -59,23 +59,62 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final smsProvider = Provider.of<SMSProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final isThreat = widget.message.isQuarantined || widget.message.isDangerous;
     final hasCallToAction = widget.message.suspiciousElements.isNotEmpty;
     final isVerification = _isVerificationMessage();
+    final unreadCount = smsProvider.unreadCount;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.primary,
-            size: 18,
-          ),
-          onPressed: () => Navigator.pop(context),
+        leadingWidth: 80, // Más espacio para badge
+        leading: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                // Badge contador de no leídos (esquina superior derecha del botón)
+                if (unreadCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
         title: Column(
           children: [
@@ -425,7 +464,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
           ),
           child: Stack(
             children: [
-              // Mensaje real
+              // Mensaje real (con cola estilo historieta en esquina inferior izquierda)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -434,7 +473,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     topLeft: Radius.circular(18),
                     topRight: Radius.circular(18),
                     bottomRight: Radius.circular(18),
-                    bottomLeft: Radius.circular(4),
+                    bottomLeft: Radius.circular(0), // Cola pronunciada estilo speech bubble
                   ),
                   border: containerBorder,
                 ),
@@ -558,7 +597,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     topLeft: Radius.circular(18),
                     topRight: Radius.circular(18),
                     bottomLeft: Radius.circular(18),
-                    bottomRight: Radius.circular(4),
+                    bottomRight: Radius.circular(0), // Cola apunta DERECHA ▶ (mensaje saliente)
                   ),
                 ),
                 child: Column(

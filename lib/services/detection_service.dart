@@ -6,10 +6,10 @@ class DetectionService {
   // ⛔ PATRONES CRÍTICOS: SEGURIDAD BANCARIA (score +40)
   // Protección especial para adultos mayores contra fraudes de "clave generada"
   static final List<RegExp> _criticalSecurityPatterns = [
-    RegExp(r'clave\s+(principal|dinamica|segura?|de\s+acceso)\s+(fue|ha\s+sido)?\s*(generada?|cambiada?|modificada?|actualizada?)', caseSensitive: false),
-    RegExp(r'(pin|password|contraseña)\s+(fue|ha\s+sido)?\s*(generado?a?|cambiado?a?|modificado?a?)', caseSensitive: false),
-    RegExp(r'(tarjeta|cuenta|acceso)\s+(bloqueada?|suspendida?|inhabilitada?|clonada?)', caseSensitive: false),
-    RegExp(r'movimiento\s+no\s+reconocido|transaccion\s+no\s+autorizada', caseSensitive: false),
+    RegExp(r'\bclave\s+(principal|dinamica|segura?|de\s+acceso)\s+(fue|ha\s+sido)?\s*(generada?|cambiada?|modificada?|actualizada?)', caseSensitive: false),
+    RegExp(r'\b(pin|password|contraseña)\s+(fue|ha\s+sido)?\s*(generado?a?|cambiado?a?|modificado?a?)', caseSensitive: false),
+    RegExp(r'\b(tarjeta|cuenta|acceso)\s+(bloqueada?|suspendida?|inhabilitada?|clonada?)', caseSensitive: false),
+    RegExp(r'\bmovimiento\s+no\s+reconocido|transaccion\s+no\s+autorizada', caseSensitive: false),
   ];
 
   // PATRONES BASADOS EN TUS SMS REALES
