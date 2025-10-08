@@ -37,6 +37,15 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
           curve: Curves.easeOut,
         );
       }
+
+      // ⛔ MOSTRAR ALERTA CRÍTICA automáticamente si es mensaje de seguridad bancaria
+      if (widget.message.isCriticalSecurity) {
+        Future.delayed(Duration(milliseconds: 500), () {
+          if (mounted) {
+            _showCriticalSecurityWarning();
+          }
+        });
+      }
     });
   }
 
@@ -1372,6 +1381,202 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: Text('Bloquear', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ⛔ NUEVO: Modal de alerta crítica para mensajes de seguridad bancaria
+  /// Protección especial para adultos mayores contra fraudes de "clave generada"
+  void _showCriticalSecurityWarning() {
+    final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+    final entities = widget.message.detectedEntities ?? [];
+    final entityName = entities.isNotEmpty ? entities.first.name : 'tu banco';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // No se puede cerrar tocando afuera
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.red.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_rounded, color: Colors.red, size: 32),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '⛔ ALERTA CRÍTICA',
+                style: TextStyle(
+                  color: Colors.red.shade900,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Este mensaje menciona CLAVES DE BANCO pero contiene números NO OFICIALES.',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red.shade900,
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.close, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'NO llames a los números del mensaje',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.close, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'NO cambies tu clave por este SMS',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.close, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'NO vayas al cajero inmediatamente',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '$entityName NUNCA pide cambiar claves por SMS',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Si tienes dudas, llama TÚ MISMO a la línea oficial',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          if (widget.message.hasOfficialSuggestions)
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                // Scroll to official channels section
+              },
+              icon: Icon(Icons.phone, color: AppColors.primary),
+              label: Text('Ver canales oficiales'),
+            ),
+          TextButton(
+            onPressed: () async {
+              // Auto-block sender
+              await smsProvider.blockSender(
+                widget.message.sender,
+                reason: 'Fraude crítico - clave bancaria',
+              );
+              if (context.mounted) {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to messages list
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✅ Remitente bloqueado automáticamente'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('Bloquear remitente', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Entendido'),
           ),
         ],
       ),

@@ -3,6 +3,15 @@ import '../detection/entities/official_entities_service.dart';
 import 'intent_detection_service.dart';
 
 class DetectionService {
+  // ⛔ PATRONES CRÍTICOS: SEGURIDAD BANCARIA (score +40)
+  // Protección especial para adultos mayores contra fraudes de "clave generada"
+  static final List<RegExp> _criticalSecurityPatterns = [
+    RegExp(r'clave\s+(principal|dinamica|segura?|de\s+acceso)\s+(fue|ha\s+sido)?\s*(generada?|cambiada?|modificada?|actualizada?)', caseSensitive: false),
+    RegExp(r'(pin|password|contraseña)\s+(fue|ha\s+sido)?\s*(generado?a?|cambiado?a?|modificado?a?)', caseSensitive: false),
+    RegExp(r'(tarjeta|cuenta|acceso)\s+(bloqueada?|suspendida?|inhabilitada?|clonada?)', caseSensitive: false),
+    RegExp(r'movimiento\s+no\s+reconocido|transaccion\s+no\s+autorizada', caseSensitive: false),
+  ];
+
   // PATRONES BASADOS EN TUS SMS REALES
   static final List<RegExp> _suspiciousPatterns = [
     // URGENCIA EXTREMA (de tus ejemplos)
@@ -222,12 +231,21 @@ class DetectionService {
   /// CÁLCULO DE RIESGO MEJORADO
   static int calculateRiskScore(String message, String sender) {
     int score = 0;
-    
+
     // VERIFICAR REMITENTE CONFIABLE PRIMERO
     if (_isKnownTrustedSender(sender)) {
       score -= 20;
     }
-    
+
+    // ⛔ MÁXIMA PRIORIDAD: PATRONES CRÍTICOS DE SEGURIDAD BANCARIA (+40)
+    // Detecta fraudes que asustan adultos mayores (ej: "clave generada")
+    for (RegExp pattern in _criticalSecurityPatterns) {
+      if (pattern.hasMatch(message)) {
+        score += 40; // BOOST FUERTE - protección para vulnerables
+        break; // Solo contar una vez
+      }
+    }
+
     // PATRONES SOSPECHOSOS
     for (RegExp pattern in _suspiciousPatterns) {
       if (pattern.hasMatch(message)) {
@@ -371,14 +389,22 @@ class DetectionService {
   /// IDENTIFICAR ELEMENTOS SOSPECHOSOS - ENFOQUE REALISTA AMPLIADO
   static List<String> identifySuspiciousElements(String message, String sender) {
     List<String> elements = [];
-    
+
+    // ⛔ PRIORIDAD 1: ALERTA CRÍTICA DE SEGURIDAD BANCARIA
+    for (RegExp pattern in _criticalSecurityPatterns) {
+      if (pattern.hasMatch(message)) {
+        elements.add('⛔ ALERTA CRÍTICA: Mensaje menciona cambio de claves/acceso bancario');
+        break; // Solo agregar una vez
+      }
+    }
+
     // Verificar dominios maliciosos conocidos
     for (String domain in _maliciousDomains) {
       if (message.toLowerCase().contains(domain)) {
         elements.add('Dominio malicioso conocido: $domain');
       }
     }
-    
+
     // Detectar entidades mencionadas
     var entities = OfficialEntitiesService.detectEntitiesInMessage(message);
     var links = extractRealLinks(message);

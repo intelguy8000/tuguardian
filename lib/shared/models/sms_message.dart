@@ -33,6 +33,13 @@ class SMSMessage {
   bool get isSafe => riskScore < 40;
   bool get isModerate => riskScore >= 30 && riskScore < 70;
   bool get isDangerous => riskScore >= 70;
+
+  // ⛔ NUEVO: Detectar si es mensaje CRÍTICO de seguridad bancaria
+  bool get isCriticalSecurity {
+    return suspiciousElements.any((element) =>
+      element.contains('⛔ ALERTA CRÍTICA')
+    );
+  }
   
   // NUEVO - Badge para UI
   String get badge => isDemo ? '🎭 DEMO' : '🔴 REAL';

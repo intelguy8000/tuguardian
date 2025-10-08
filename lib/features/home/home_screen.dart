@@ -686,20 +686,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
 
-    // Determine border color based on risk (NO GREEN - only red/orange/none)
+    // Determine border color based on risk (OPTION A: only red for dangerous, neutral for everything else)
     Color? borderColor;
     if (conversation.hasDangerousMessages) {
-      borderColor = Colors.red;
+      borderColor = Colors.red; // Only red for dangerous (score >= 70)
     } else {
-      // Check if has moderate messages
-      bool hasModerate = conversation.messages.any((msg) =>
-        msg.originalSMS?.isModerate ?? false
-      );
-      if (hasModerate) {
-        borderColor = Colors.orange;
-      } else {
-        borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300; // Neutral gray for safe
-      }
+      borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300; // Neutral gray for moderate + safe
     }
 
     bool isSelected = _selectedConversations.contains(conversation.sender);
