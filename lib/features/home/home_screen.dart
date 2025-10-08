@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late TabController _tabController;
+  // late TabController _tabController; // COMMENTED: For future CHAT tab implementation
   String _selectedFilter = 'Todos';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // _tabController = TabController(length: 2, vsync: this); // COMMENTED: For future CHAT tab
 
     // Mostrar disclaimer la primera vez
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _tabController.dispose();
+    // _tabController.dispose(); // COMMENTED: For future CHAT tab
     _searchController.dispose();
     super.dispose();
   }
@@ -115,46 +115,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(width: 12),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
-                ),
-              ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-              indicatorColor: AppColors.primary,
-              indicatorWeight: 3,
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: const [
-                Tab(text: 'SMS'),
-                Tab(text: 'CHAT'),
-              ],
-            ),
-          ),
-        ),
+        // COMMENTED: TabBar for future CHAT tab implementation (Wickr-style)
+        // bottom: PreferredSize(
+        //   preferredSize: const Size.fromHeight(50),
+        //   child: Container(
+        //     decoration: BoxDecoration(
+        //       border: Border(
+        //         bottom: BorderSide(
+        //           color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+        //         ),
+        //       ),
+        //     ),
+        //     child: TabBar(
+        //       controller: _tabController,
+        //       labelColor: AppColors.primary,
+        //       unselectedLabelColor: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+        //       indicatorColor: AppColors.primary,
+        //       indicatorWeight: 3,
+        //       indicatorSize: TabBarIndicatorSize.tab,
+        //       labelStyle: const TextStyle(
+        //         fontSize: 16,
+        //         fontWeight: FontWeight.w600,
+        //       ),
+        //       unselectedLabelStyle: const TextStyle(
+        //         fontSize: 16,
+        //         fontWeight: FontWeight.w500,
+        //       ),
+        //       tabs: const [
+        //         Tab(text: 'SMS'),
+        //         Tab(text: 'CHAT'),
+        //       ],
+        //     ),
+        //   ),
+        // ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildConversationsTab(isDark), // SMS tab shows conversations
-          _buildChatTab(isDark), // Chat tab for future secure chat
-        ],
-      ),
+      body: _buildConversationsTab(isDark), // Show only SMS conversations (CHAT tab commented for future)
+      // COMMENTED: TabBarView for future CHAT tab implementation (Wickr-style)
+      // body: TabBarView(
+      //   controller: _tabController,
+      //   children: [
+      //     _buildConversationsTab(isDark), // SMS tab shows conversations
+      //     _buildChatTab(isDark), // Chat tab for future secure chat
+      //   ],
+      // ),
       bottomNavigationBar: _isEditMode ? _buildEditModeToolbar(isDark) : null,
     );
   }
