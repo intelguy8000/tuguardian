@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/app_colors.dart';
 
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
@@ -25,7 +26,12 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeData get lightTheme => ThemeData(
     brightness: Brightness.light,
-    primarySwatch: Colors.blue,
+    primaryColor: AppColors.primary,
+    primarySwatch: Colors.blue, // MaterialColor fallback
+    colorScheme: ColorScheme.light(
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+    ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,
@@ -40,7 +46,12 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeData get darkTheme => ThemeData(
     brightness: Brightness.dark,
-    primarySwatch: Colors.orange,
+    primaryColor: AppColors.primary,
+    primarySwatch: Colors.orange, // MaterialColor fallback
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+    ),
     scaffoldBackgroundColor: const Color(0xFF1A1A1A),
     appBarTheme: const AppBarTheme(
       backgroundColor: Color(0xFF2D2D2D),

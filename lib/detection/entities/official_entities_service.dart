@@ -3,6 +3,7 @@ class OfficialEntity {
   final String? whatsapp;
   final String? website;
   final bool hasApp;
+  final String? playStoreUrl; // NUEVO: URL oficial de Play Store
   final List<String> aliases; // Variaciones del nombre
 
   const OfficialEntity({
@@ -10,12 +11,14 @@ class OfficialEntity {
     this.whatsapp,
     this.website,
     this.hasApp = false,
+    this.playStoreUrl,
     this.aliases = const [],
   });
 
   String get whatsappUrl => whatsapp != null ? 'https://wa.me/$whatsapp' : '';
   bool get hasWhatsApp => whatsapp != null && whatsapp!.isNotEmpty;
   bool get hasWebsite => website != null && website!.isNotEmpty;
+  bool get hasPlayStoreUrl => playStoreUrl != null && playStoreUrl!.isNotEmpty;
 }
 
 class OfficialEntitiesService {
@@ -26,21 +29,24 @@ class OfficialEntitiesService {
       whatsapp: '573013536788',
       website: 'https://www.bancolombia.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=co.com.bancolombia.personas.superapp',
       aliases: ['banco colombia', 'banco de colombia', 'bancolombia s.a.'],
     ),
-    
+
     'davivienda': OfficialEntity(
       name: 'Davivienda',
       website: 'https://www.davivienda.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.davivienda.daviviendaapp',
       aliases: ['banco davivienda', 'davivienda s.a.'],
     ),
-    
+
     'banco_occidente': OfficialEntity(
       name: 'Banco de Occidente',
       whatsapp: '573186714836',
       website: 'https://www.bancodeoccidente.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.grupoavaloc1.bancamovil',
       aliases: ['occidente', 'banco occidente'],
     ),
 
@@ -49,6 +55,7 @@ class OfficialEntitiesService {
       whatsapp: '573162222222',
       website: 'https://www.bancodebogota.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.bancodebogota.bancamovil',
       aliases: ['bogota', 'banco bogota', 'banco de bogotá'],
     ),
 
@@ -71,20 +78,23 @@ class OfficialEntitiesService {
       whatsapp: '573152757888',
       website: 'https://www.sura.co/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=co.com.sura.seguros',
       aliases: ['seguros sura', 'sura seguros', 'eps sura'],
     ),
-    
+
     'claro': OfficialEntity(
       name: 'Claro',
       whatsapp: '573112000000',
       website: 'https://www.claro.com.co/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.clarocolombia.miclaro',
       aliases: ['claro colombia'],
     ),
-    
+
     'netflix': OfficialEntity(
       name: 'Netflix',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.netflix.mediaclient',
       aliases: [],
     ),
     
@@ -107,6 +117,7 @@ class OfficialEntitiesService {
       name: 'DHL',
       website: 'https://www.dhl.com/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.dhl.exp.dhlmobile',
       aliases: ['dhl express', 'dhl colombia', 'paquete dhl', 'envío dhl', 'envio dhl'],
     ),
 
@@ -114,6 +125,7 @@ class OfficialEntitiesService {
       name: 'FedEx',
       website: 'https://www.fedex.com/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.fedex.ida.android',
       aliases: ['fedex express', 'fedex colombia', 'paquete fedex'],
     ),
 
@@ -121,6 +133,7 @@ class OfficialEntitiesService {
       name: 'Servientrega',
       website: 'https://www.servientrega.com/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.servientrega',
       aliases: ['servientrega colombia', 'paquete servientrega'],
     ),
 
@@ -128,6 +141,7 @@ class OfficialEntitiesService {
       name: 'Coordinadora',
       website: 'https://www.coordinadora.com/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.coordinadora.goo.app',
       aliases: ['coordinadora mercantil', 'paquete coordinadora'],
     ),
     
@@ -136,6 +150,7 @@ class OfficialEntitiesService {
       whatsapp: '573152333333',
       website: 'https://www.movistar.com.co/',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=movistar.android.app',
       aliases: ['telefónica movistar', 'movistar colombia','mi.movistar.co', 'movistar.co'],
     ),
 
@@ -144,6 +159,7 @@ class OfficialEntitiesService {
       name: 'MercadoLibre',
       website: 'https://www.mercadolibre.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.mercadolibre',
       aliases: ['mercado libre', 'meli', 'mercadolibre colombia', 'ml'],
     ),
 
@@ -151,6 +167,7 @@ class OfficialEntitiesService {
       name: 'MercadoPago',
       website: 'https://www.mercadopago.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.mercadopago.wallet',
       aliases: ['mercado pago', 'mpago'],
     ),
 
@@ -158,6 +175,7 @@ class OfficialEntitiesService {
       name: 'Amazon',
       website: 'https://www.amazon.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.amazon.mShop.android.shopping',
       aliases: ['amazon.com', 'amazon prime', 'prime'],
     ),
 
@@ -165,6 +183,7 @@ class OfficialEntitiesService {
       name: 'Falabella',
       website: 'https://www.falabella.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.falabella.falabellaApp',
       aliases: ['falabella colombia', 'saga falabella'],
     ),
 
@@ -172,6 +191,7 @@ class OfficialEntitiesService {
       name: 'Éxito',
       website: 'https://www.exito.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.exito.appcompania',
       aliases: ['exito', 'almacenes exito', 'grupo exito'],
     ),
 
@@ -179,6 +199,7 @@ class OfficialEntitiesService {
       name: 'Rappi',
       website: 'https://www.rappi.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.grability.rappi',
       aliases: ['rappi colombia'],
     ),
 
@@ -186,6 +207,7 @@ class OfficialEntitiesService {
       name: 'AliExpress',
       website: 'https://www.aliexpress.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.alibaba.aliexpresshd',
       aliases: ['ali express'],
     ),
 
@@ -194,6 +216,7 @@ class OfficialEntitiesService {
       name: 'Nequi',
       website: 'https://www.nequi.com.co',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.nequi.MobileApp',
       aliases: ['nequi colombia', 'app nequi'],
     ),
 
@@ -201,6 +224,7 @@ class OfficialEntitiesService {
       name: 'DaviPlata',
       website: 'https://www.daviplata.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.davivienda.daviplataapp',
       aliases: ['davi plata', 'daviplata davivienda'],
     ),
 
@@ -208,6 +232,7 @@ class OfficialEntitiesService {
       name: 'PayPal',
       website: 'https://www.paypal.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.paypal.android.p2pmobile',
       aliases: ['paypal.com'],
     ),
 
@@ -223,6 +248,7 @@ class OfficialEntitiesService {
       name: 'Envía',
       website: 'https://www.envia.com',
       hasApp: true,
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.enviaclientapp',
       aliases: ['envia.com', 'envia colombia'],
     ),
   };
@@ -337,7 +363,7 @@ class OfficialEntitiesService {
 
   static List<ContactChannel> _generateChannelOptions(OfficialEntity entity) {
     List<ContactChannel> channels = [];
-    
+
     // WhatsApp (prioridad alta)
     if (entity.hasWhatsApp) {
       channels.add(ContactChannel(
@@ -348,9 +374,18 @@ class OfficialEntitiesService {
         priority: 1,
       ));
     }
-    
-    // App oficial (prioridad media-alta)
-    if (entity.hasApp) {
+
+    // App oficial con Play Store URL (prioridad media-alta)
+    if (entity.hasApp && entity.hasPlayStoreUrl) {
+      channels.add(ContactChannel(
+        type: ContactChannelType.playstore,
+        label: 'Descargar App Oficial',
+        action: entity.playStoreUrl!,
+        icon: 'get_app',
+        priority: 2,
+      ));
+    } else if (entity.hasApp) {
+      // Fallback si no tiene Play Store URL
       channels.add(ContactChannel(
         type: ContactChannelType.app,
         label: 'App Oficial ${entity.name}',
@@ -359,7 +394,7 @@ class OfficialEntitiesService {
         priority: 2,
       ));
     }
-    
+
     // Website (prioridad media)
     if (entity.hasWebsite) {
       channels.add(ContactChannel(
@@ -370,10 +405,10 @@ class OfficialEntitiesService {
         priority: 3,
       ));
     }
-    
+
     // Ordenar por prioridad
     channels.sort((a, b) => a.priority.compareTo(b.priority));
-    
+
     return channels;
   }
 }
@@ -408,5 +443,6 @@ class ContactChannel {
 enum ContactChannelType {
   whatsapp,
   app,
+  playstore, // NUEVO: Enlace directo a Play Store
   website,
 }

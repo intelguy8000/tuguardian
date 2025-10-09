@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // PALETA DE AZULES ARMONIZADA
-  static const Color primary = Color(0xFF007AFF);        // Azul principal iOS
-  static const Color primaryLight = Color(0xFF64B5F6);   // Azul claro círculos
-  static const Color primaryTech = Color(0xFF2196F3);    // Azul tecnológico settings/edit
-  static const Color primaryDark = Color(0xFF0056CC);
+  // PALETA DE AZULES ARMONIZADA - Logo TuGuardian
+  static const Color primary = Color(0xFF5170FF);        // Azul principal logo
+  static const Color primaryLight = Color(0xFF7B91FF);   // Azul claro derivado
+  static const Color primaryTech = Color(0xFF5170FF);    // Azul tecnológico (mismo que primary)
+  static const Color primaryDark = Color(0xFF3A52CC);
   
   static const Color secondary = Color(0xFF34C759);
   static const Color accent = Color(0xFFFF9500);
@@ -14,7 +14,7 @@ class AppColors {
   static const Color success = Color(0xFF34C759);
   static const Color warning = Color(0xFFFF9500);
   static const Color error = Color(0xFFFF3B30);
-  static const Color info = Color(0xFF007AFF);
+  static const Color info = Color(0xFF5170FF);
   
   // Colores de riesgo
   static const Color riskHigh = Color(0xFFFF3B30);    // 70-100%
@@ -39,7 +39,7 @@ class AppColors {
   static const Color darkTextSecondary = Color(0xFF99999E);
   
   // Colores iOS específicos
-  static const Color iosBlue = Color(0xFF007AFF);
+  static const Color iosBlue = Color(0xFF5170FF);
   static const Color iosGreen = Color(0xFF34C759);
   static const Color iosRed = Color(0xFFFF3B30);
   static const Color iosOrange = Color(0xFFFF9500);
@@ -50,7 +50,7 @@ class AppColors {
   
   // Gradientes
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF007AFF), Color(0xFF0056CC)],
+    colors: [Color(0xFF5170FF), Color(0xFF3A52CC)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
