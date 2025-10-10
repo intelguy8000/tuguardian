@@ -7,6 +7,7 @@ import '../../shared/providers/sms_provider.dart';
 import '../../shared/models/sms_message.dart';
 import '../../core/app_colors.dart';
 import '../../detection/entities/official_entities_service.dart';
+import '../../services/local_feedback_service.dart';
 
 class MessageDetailScreen extends StatefulWidget {
   final SMSMessage message;
@@ -1146,39 +1147,158 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
   }
 
   void _showMessageInfo() {
+    final feedbackService = LocalFeedbackService();
+
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Información del Mensaje',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+      isScrollControlled: true,
+      builder: (context) => FutureBuilder(
+        future: feedbackService.initialize(),
+        builder: (context, snapshot) {
+          final hasFeedback = feedbackService.hasUserFeedback(widget.message.message);
+          final existingFeedback = feedbackService.getFeedbackForMessage(widget.message.message);
+
+          return Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Información del Mensaje',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildInfoRow('Remitente', widget.message.sender),
+                _buildInfoRow('Fecha', _formatDate(widget.message.timestamp)),
+                _buildInfoRow('Nivel de Riesgo', '${widget.message.riskScore}%'),
+                _buildInfoRow('Estado',
+                  widget.message.isQuarantined
+                    ? 'Bloqueado por TuGuardian'
+                    : _isVerificationMessage()
+                      ? 'Verificación bancaria'
+                      : 'Mensaje legítimo'
+                ),
+                const SizedBox(height: 20),
+                Divider(),
+                const SizedBox(height: 12),
+
+                // ========== FEEDBACK SECTION (SUBTLE) ==========
+                if (!hasFeedback) ...[
+                  Row(
+                    children: [
+                      Text(
+                        '¿Fue correcta la detección?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Spacer(),
+                      // Thumbs Down - Incorrect
+                      IconButton(
+                        icon: Icon(Icons.thumb_down_outlined, size: 20),
+                        color: Colors.red,
+                        onPressed: () => _submitFeedback(context, feedbackService, 'false_positive'),
+                        tooltip: 'Detección incorrecta',
+                      ),
+                      SizedBox(width: 4),
+                      // Thumbs Up - Correct
+                      IconButton(
+                        icon: Icon(Icons.thumb_up_outlined, size: 20),
+                        color: Colors.green,
+                        onPressed: () => _submitFeedback(context, feedbackService, 'correct'),
+                        tooltip: 'Detección correcta',
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  // Show existing feedback
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          existingFeedback?.userFeedback == 'correct'
+                            ? Icons.thumb_up
+                            : Icons.thumb_down,
+                          color: existingFeedback?.userFeedback == 'correct'
+                            ? Colors.green
+                            : Colors.red,
+                          size: 20,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            existingFeedback?.userFeedback == 'correct'
+                              ? 'Detección correcta • Gracias por tu feedback'
+                              : 'Detección incorrecta • Mejorando algoritmo',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildInfoRow('Remitente', widget.message.sender),
-            _buildInfoRow('Fecha', _formatDate(widget.message.timestamp)),
-            _buildInfoRow('Nivel de Riesgo', '${widget.message.riskScore}%'),
-            _buildInfoRow('Estado', 
-              widget.message.isQuarantined 
-                ? 'Bloqueado por TuGuardian' 
-                : _isVerificationMessage() 
-                  ? 'Verificación bancaria'
-                  : 'Mensaje legítimo'
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
+  }
+
+  /// Submit user feedback for message detection accuracy
+  Future<void> _submitFeedback(
+    BuildContext context,
+    LocalFeedbackService feedbackService,
+    String feedbackType
+  ) async {
+    await feedbackService.recordMessageFeedback(
+      messageId: widget.message.id,
+      messageContent: widget.message.message,
+      detectedRisk: widget.message.riskScore,
+      triggeredPatterns: widget.message.suspiciousElements,
+      userFeedback: feedbackType,
+    );
+
+    if (context.mounted) {
+      Navigator.pop(context); // Close bottom sheet
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                feedbackType == 'correct' ? Icons.check_circle : Icons.info,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  feedbackType == 'correct'
+                    ? 'Gracias. La detección mejorará con tu ayuda.'
+                    : 'Gracias. El algoritmo aprenderá de este caso.',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: feedbackType == 'correct' ? Colors.green : Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Widget _buildInfoRow(String label, String value) {

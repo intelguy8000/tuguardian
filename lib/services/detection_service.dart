@@ -1,6 +1,7 @@
 import '../shared/models/sms_message.dart';
 import '../detection/entities/official_entities_service.dart';
 import 'intent_detection_service.dart';
+import 'local_feedback_service.dart';
 
 class DetectionService {
   // ⛔ PATRONES CRÍTICOS: SEGURIDAD BANCARIA (score +40)
@@ -202,8 +203,16 @@ class DetectionService {
       suspiciousElements.insert(0, intentAnalysis.userGuidance);
     }
 
+    // ========== 🎓 APPLY MACHINE LEARNING (Local Feedback) ==========
+    // Ajustar riesgo basado en aprendizaje del usuario (si disponible)
+    final feedbackService = LocalFeedbackService();
+    final adjustedRiskScore = feedbackService.calculateAdjustedRisk(
+      baseRisk: finalRiskScore,
+      triggeredPatterns: suspiciousElements,
+    );
+
     // 5. QUARANTINE DECISION
-    bool shouldQuarantine = finalRiskScore >= 75 || intentAnalysis.shouldBlockLinks;
+    bool shouldQuarantine = adjustedRiskScore >= 75 || intentAnalysis.shouldBlockLinks;
 
     // 6. DETECT ENTITIES
     var detectedEntities = OfficialEntitiesService.detectEntitiesInMessage(message);
@@ -219,7 +228,7 @@ class DetectionService {
       sender: sender,
       message: message,
       timestamp: timestamp,
-      riskScore: finalRiskScore,
+      riskScore: adjustedRiskScore, // ← Usar riesgo ajustado por ML
       isQuarantined: shouldQuarantine,
       suspiciousElements: suspiciousElements,
       detectedEntities: detectedEntities.isNotEmpty ? detectedEntities : null,
