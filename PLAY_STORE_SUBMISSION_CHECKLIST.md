@@ -1,27 +1,30 @@
 # Google Play Store Submission Checklist - TuGuardian
 
-**Version:** 1.0.0
+**Version:** 1.0.5 (versionCode: 5)
 **Package:** io.github.intelguy8000.tuguardian
 **Target Launch:** December 16-27, 2025
-**Status:** 🟡 In Progress (85% Complete)
+**Status:** 🟢 INTERNAL TESTING LIVE (95% Complete)
 
 ---
 
 ## 🔴 CRITICAL - Must Complete Before Submission
 
 ### 1. Play Store Account Setup
-- [ ] Create Google Play Developer account ($25 USD one-time fee)
-- [ ] Verify identity and payment method
+- [x] Create Google Play Developer account ($25 USD one-time fee) ✅
+- [x] Verify identity and payment method ✅
+- [x] Configure app access settings ✅
+- [x] Configure internal testing testers ✅
 - [ ] Set up merchant account (if future paid features planned)
-- [ ] Configure app access settings
 
 ### 2. Signed Release Build
-- [x] Created keystore (tuguardian-upload-key.jks) ✅
+- [x] Created keystore (upload-keystore.jks) ✅
 - [x] Configured key.properties with signing credentials ✅
 - [x] Updated build.gradle.kts for release signing ✅
 - [x] Tested signed AAB build (`flutter build appbundle --release`) ✅
-- [ ] **Upload AAB to Play Console** (⚠️ Account needed first)
-- [ ] Verify upload integrity and APK analysis results
+- [x] **Upload AAB to Play Console** ✅ (Oct 25, 2025)
+- [x] Verify upload integrity and APK analysis results ✅
+- [x] **Google approved new upload key** ✅ (Oct 24-25, 2025)
+- [x] **Published to Internal Testing** ✅ (v1.0.5, Oct 25 2:55 AM)
 
 ### 3. Play Store Assets (Graphics)
 - [ ] **App Icon (512x512 PNG)** - Adaptive icon ready, need export
@@ -284,7 +287,9 @@
 ---
 
 **Prepared by:** Juan Andrés García
-**Last Updated:** December 2025
-**Next Review:** After Play Store account creation
+**Last Updated:** October 25, 2025
+**Next Review:** After internal testing feedback
 
-**🚀 Ready to launch once Play Store account is created and assets finalized!**
+**🎉 INTERNAL TESTING LIVE - Version 1.0.5 published!**
+**📱 Available for testers - Awaiting feedback**
+**🚀 Next step: Gather feedback, prepare for Production launch**

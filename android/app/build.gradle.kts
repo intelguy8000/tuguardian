@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "io.github.intelguy8000.tuguardian"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -31,7 +31,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.intelguy8000.tuguardian"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
