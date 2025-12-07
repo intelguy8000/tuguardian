@@ -41,6 +41,9 @@ class LocalFeedbackService {
     } else {
       _statsCache = {};
     }
+
+    // Limpiar feedback antiguo (>180 días) al iniciar
+    await cleanOldFeedback();
   }
 
   /// Hash SHA-256 para privacidad (one-way)
