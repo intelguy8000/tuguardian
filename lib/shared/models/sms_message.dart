@@ -30,8 +30,9 @@ class SMSMessage {
   });
   
   // Getters para clasificación de riesgo
+  // Rangos: Safe (0-39), Moderate (40-69), Dangerous (70+)
   bool get isSafe => riskScore < 40;
-  bool get isModerate => riskScore >= 30 && riskScore < 70;
+  bool get isModerate => riskScore >= 40 && riskScore < 70;
   bool get isDangerous => riskScore >= 70;
 
   // ⛔ NUEVO: Detectar si es mensaje CRÍTICO de seguridad bancaria

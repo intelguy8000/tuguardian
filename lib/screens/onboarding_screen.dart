@@ -127,12 +127,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildOnboardingPage(OnboardingPage page) {
-    return Container(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         children: [
           SizedBox(height: 40),
-          
+
           // Icon/Animation
           Container(
             height: 180,
@@ -154,9 +154,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: page.color,
             ),
           ),
-          
+
           SizedBox(height: 40),
-          
+
           // Title
           Text(
             page.title,
@@ -168,9 +168,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               height: 1.2,
             ),
           ),
-          
+
           SizedBox(height: 16),
-          
+
           // Subtitle
           Text(
             page.subtitle,
@@ -181,9 +181,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: page.color,
             ),
           ),
-          
+
           SizedBox(height: 24),
-          
+
           // Description
           Text(
             page.description,
@@ -194,13 +194,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: Colors.grey[600],
             ),
           ),
-          
+
           SizedBox(height: 40),
-          
+
           // Special content for permission page
           if (page.isPermissionPage) ...[
             _buildPermissionExplanation(),
           ],
+
+          SizedBox(height: 20), // Padding inferior
         ],
       ),
     );
