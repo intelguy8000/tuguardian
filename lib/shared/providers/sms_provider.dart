@@ -6,6 +6,7 @@ import '../../services/sms_listener_service.dart';
 import '../../services/database_service.dart';
 import '../../services/badge_service.dart';
 import '../../services/blocked_senders_service.dart';
+import '../../services/hidden_messages_service.dart';
 
 class SMSProvider with ChangeNotifier {
   // LISTAS SEPARADAS
@@ -94,6 +95,7 @@ class SMSProvider with ChangeNotifier {
   SMSProvider() {
     _autoEnableRealMode(); // Auto-enable real-time protection
     BlockedSendersService.initialize(); // Initialize blocked senders
+    HiddenMessagesService.initialize(); // Initialize hidden messages tracking
   }
 
   /// Auto-enable real mode on app start
@@ -431,22 +433,20 @@ class SMSProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Delete conversations from specific senders (local database only)
+  /// Delete conversations from specific senders (persists across app restarts)
   Future<void> deleteConversations(List<String> senders) async {
     try {
       for (String sender in senders) {
-        // Find all messages from this sender
+        // 1. PERSISTIR: Marcar sender como oculto (sobrevive reinicios)
+        await HiddenMessagesService.hideSender(sender);
+
+        // 2. Limpiar tracking de lectura
         List<SMSMessage> messagesToDelete = _realMessages.where((msg) => msg.sender == sender).toList();
-
-        // Delete from local database
         for (var msg in messagesToDelete) {
-          await _db.deleteMessage(msg.id);
-
-          // Remove from read tracking if it was there
           _readMessageIds.remove(msg.id);
         }
 
-        // Remove from in-memory list
+        // 3. Remover de memoria para efecto inmediato
         _realMessages.removeWhere((msg) => msg.sender == sender);
       }
 
@@ -455,7 +455,7 @@ class SMSProvider with ChangeNotifier {
 
       notifyListeners();
 
-      print('✅ Eliminadas ${senders.length} conversaciones de TuGuardian');
+      print('✅ Eliminadas ${senders.length} conversaciones de TuGuardian (persistente)');
     } catch (e) {
       print('❌ Error eliminando conversaciones: $e');
       throw e;

@@ -3,6 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'detection_service.dart';
 import 'notification_service.dart';
 import 'database_service.dart';
+import 'hidden_messages_service.dart';
 import '../shared/models/sms_message.dart';
 
 /// Background message handler (must be top-level function with @pragma annotation)
@@ -145,7 +146,10 @@ class SMSListenerService {
   Future<List<SMSMessage>> loadHistoricalSMS() async {
     try {
       print('📚 Cargando SMS históricos...');
-      
+
+      // Inicializar servicio de mensajes ocultos
+      await HiddenMessagesService.initialize();
+
       List<SmsMessage> messages = await telephony.getInboxSms(
         columns: [
           SmsColumn.ADDRESS,
@@ -157,10 +161,21 @@ class SMSListenerService {
           OrderBy(SmsColumn.DATE, sort: Sort.DESC),
         ],
       );
-      
+
       print('📱 Encontrados ${messages.length} SMS en dispositivo');
-      
-      List<SMSMessage> analyzed = messages.take(100).map((msg) {
+
+      // Filtrar mensajes de senders ocultos ANTES de analizar
+      List<SmsMessage> visibleMessages = messages.where((msg) {
+        String sender = msg.address ?? 'Desconocido';
+        return !HiddenMessagesService.isHiddenSync(sender);
+      }).toList();
+
+      int hiddenCount = messages.length - visibleMessages.length;
+      if (hiddenCount > 0) {
+        print('🙈 $hiddenCount SMS ocultos (conversaciones eliminadas)');
+      }
+
+      List<SMSMessage> analyzed = visibleMessages.take(100).map((msg) {
         return DetectionService.analyzeMessage(
           msg.id.toString(),
           msg.address ?? 'Desconocido',
@@ -168,14 +183,14 @@ class SMSListenerService {
           DateTime.fromMillisecondsSinceEpoch(msg.date ?? DateTime.now().millisecondsSinceEpoch),
         );
       }).toList();
-      
+
       print('✅ ${analyzed.length} SMS analizados');
       print('   Peligrosos: ${analyzed.where((m) => m.isDangerous).length}');
       print('   Moderados: ${analyzed.where((m) => m.isModerate).length}');
       print('   Seguros: ${analyzed.where((m) => m.isSafe).length}');
-      
+
       return analyzed;
-      
+
     } catch (e) {
       print('❌ Error cargando SMS históricos: $e');
       return [];
