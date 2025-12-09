@@ -61,7 +61,6 @@ class SMSListenerService {
     try {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.sms,
-        Permission.phone,
       ].request();
       
       bool smsGranted = statuses[Permission.sms]?.isGranted ?? false;
@@ -81,8 +80,7 @@ class SMSListenerService {
   
   Future<bool> hasPermissions() async {
     bool sms = await Permission.sms.isGranted;
-    bool phone = await Permission.phone.isGranted;
-    return sms && phone;
+    return sms;
   }
   
   Future<void> startListening() async {
