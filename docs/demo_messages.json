@@ -1,0 +1,208 @@
+{
+  "description": "Mensajes demo para TuGuardian - respaldo para demos y presentaciones",
+  "created": "2024-12-09",
+  "total_messages": 21,
+  "messages": [
+    {
+      "id": "demo_1",
+      "sender": "891888",
+      "message": "En SURA usamos los códigos cortos 891888 y 899888 para comunicarnos contigo de forma segura. Cuando los veas, confía: somos nosotros.",
+      "riskScore": 5,
+      "type": "legitimate",
+      "category": "insurance"
+    },
+    {
+      "id": "demo_5",
+      "sender": "Movistar",
+      "message": "Tu plan se renueva mañana. Para cambiar tu plan ingresa a mi.movistar.co",
+      "riskScore": null,
+      "type": "legitimate",
+      "category": "telecom"
+    },
+    {
+      "id": "bank_verify_1",
+      "sender": "891333",
+      "message": "Bancolombia: JUAN ANDRES, por seguridad hemos rechazado la compra por $8,199,000.00 en MAC CENTER COLOMBIA el 20/03/2025 a las 20:50 con tu tarjeta Mastercard terminada en *8269. Fuiste tu? Responde SI o NO a este mensaje.",
+      "riskScore": 20,
+      "type": "legitimate",
+      "category": "bank_verification"
+    },
+    {
+      "id": "bank_verify_2",
+      "sender": "891333",
+      "message": "Bancolombia: JUAN ANDRES, esta transaccion fue aprobada: compra por $15,340.00 en UBER RIDES el 07/09/2024 a las 19:52 con tu tarjeta Mastercard terminada en *8269. Para protegerte queremos confirmar hiciste esta transaccion? Responde SI o NO a este mensaje. Gracias!",
+      "riskScore": 18,
+      "type": "legitimate",
+      "category": "bank_verification"
+    },
+    {
+      "id": "demo_2",
+      "sender": "+573001234567",
+      "message": "JUAN HOY VENCE TU FACTURA CLARO!. Ponte al dia y Paga tan solo 43.859 Por tu OBLIGACION de 87.717 Consulta con tu 3217726074: https://mcpag.li/c3",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bill"
+    },
+    {
+      "id": "demo_3",
+      "sender": "890176",
+      "message": "Apreciado cliente INTERRAPIDISIMO, en el siguiente link descarga la factura de tu envio: https://inter.la/tQHIMEr/Mi83ODUwOTc5Ng==",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_delivery"
+    },
+    {
+      "id": "demo_4",
+      "sender": "890176",
+      "message": "Estas dentro del Programa Oportunidad Familiar. Tu recompensas sera de 300,000 pesos. ¡Por favor contactame por WS para reclamar tu bono! 573106172605",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_prize"
+    },
+    {
+      "id": "demo_6",
+      "sender": "890176",
+      "message": "JUAN Tu DEUDA Sera SUSPENDIDA! Paga hoy solo 43.859 en lugar de 87.717 Ingresa ya: https://sit-onclr.de/ofic3",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_debt"
+    },
+    {
+      "id": "img_1",
+      "sender": "899771",
+      "message": "Servicio de Puntos Primax: Los 7999 puntos acumulados en su cuenta vencen hoy. Visite: https://www.primaxa.co/co para aprender a usarlos gratis.",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_points"
+    },
+    {
+      "id": "img_2",
+      "sender": "899771",
+      "message": "Aviso de canje de Occidente. Los 11600 puntos vencen hoy. Puedes canjearlos por un regalo especial en el sitio web oficial. Detalles: https://bit.ly/4oUHZTt",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_points"
+    },
+    {
+      "id": "img_3",
+      "sender": "899771",
+      "message": "¡Felicidades! Has sido seleccionado y puedes obtener 275.000 pesos. Envía un mensaje a mi WhatsApp ahora: http://wa.me/573027330063",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_prize"
+    },
+    {
+      "id": "new_1",
+      "sender": "BANCOLOMBIA",
+      "message": "Su cuenta Bancolombia ha sido bloqueada. Ingrese ahora a http://bancolombia-seguro.co para verificar.",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank"
+    },
+    {
+      "id": "new_2",
+      "sender": "+573001234567",
+      "message": "Felicidades! Eres el gran ganador de $50.000.000. Reclama aquí: http://premios-colombia.net",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_prize"
+    },
+    {
+      "id": "new_3",
+      "sender": "PENSIONES",
+      "message": "Su pensión ha sido suspendida. Comuníquese de inmediato al 01-800-XXX-XXX.",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_government"
+    },
+    {
+      "id": "new_4",
+      "sender": "DHL",
+      "message": "Your package is waiting for delivery. Confirm payment here: http://dhl-secure-delivery.info",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_delivery",
+      "language": "english"
+    },
+    {
+      "id": "new_5",
+      "sender": "BANCO BOGOTA",
+      "message": "Banco de Bogotá: detectamos un intento de acceso sospechoso. Revise en https://bogota-seguridad.com",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank"
+    },
+    {
+      "id": "new_6",
+      "sender": "GIROS",
+      "message": "¡Atención! Ha recibido un giro internacional, confirme su identidad en http://giros-seguro.org",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_money_transfer"
+    },
+    {
+      "id": "new_7",
+      "sender": "NETFLIX",
+      "message": "Netflix: su cuenta será suspendida hoy. Actualice su método de pago aquí: http://netflix-billing-update.net",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_subscription"
+    },
+    {
+      "id": "new_8",
+      "sender": "+573009876543",
+      "message": "Estimado cliente, hemos notado actividad inusual en su tarjeta. Llame ahora al 01-800-123-4567.",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank"
+    },
+    {
+      "id": "critical_dad_case",
+      "sender": "87400",
+      "message": "Bancolombia te notifica que la Clave Principal fue generada exitosamente. Si desconoces esta solicitud, comunicate de inmediato con nuestra linea 0345109095/018000931987.",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank",
+      "note": "CASO REAL: Mensaje que recibió el padre del desarrollador (70 años). Lo asustó tanto que corrió al cajero a cambiar su clave. EXACTAMENTE el tipo de fraude que TuGuardian debe prevenir."
+    },
+    {
+      "id": "new_9",
+      "sender": "APPLE",
+      "message": "Apple ID locked. Please verify immediately at http://appleid-support.net",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_tech",
+      "language": "english"
+    },
+    {
+      "id": "new_10",
+      "sender": "DAVIVIENDA",
+      "message": "Tu cuenta Davivienda ha sido seleccionada para una actualización de seguridad. Ingresa a: http://davivienda-secure.com",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank"
+    },
+    {
+      "id": "new_11",
+      "sender": "BOFA",
+      "message": "Bank of America: Suspicious activity detected on your account. Verify immediately at http://bofa-security.net",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank",
+      "language": "english"
+    },
+    {
+      "id": "new_12",
+      "sender": "+15551234567",
+      "message": "URGENT: Your Bank of America account has been locked. Click here to unlock: http://bankofamerica-verify.com",
+      "riskScore": null,
+      "type": "dangerous",
+      "category": "fake_bank",
+      "language": "english"
+    }
+  ],
+  "categories": {
+    "legitimate": ["insurance", "telecom", "bank_verification"],
+    "dangerous": ["fake_bill", "fake_delivery", "fake_prize", "fake_debt", "fake_points", "fake_bank", "fake_government", "fake_money_transfer", "fake_subscription", "fake_tech"]
+  }
+}
