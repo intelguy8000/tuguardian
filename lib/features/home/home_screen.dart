@@ -59,114 +59,93 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
-      appBar: AppBar(
-        backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
-        elevation: 0,
-        leading: Container(
-          alignment: Alignment.centerLeft,
-          margin: const EdgeInsets.only(left: 16),
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _isEditMode = !_isEditMode;
-                if (!_isEditMode) {
-                  // Clear selections when exiting edit mode
-                  _selectedConversations.clear();
-                }
-              });
-            },
-            child: Text(
-              _isEditMode ? 'Listo' : 'Editar',
-              style: TextStyle(
-                color: AppColors.primaryTech,
-                fontSize: 17,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ),
-        leadingWidth: 80,
-        title: Text(
-          'TuGuardian',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-        ],
-        // COMMENTED: TabBar for future CHAT tab implementation (Wickr-style)
-        // bottom: PreferredSize(
-        //   preferredSize: const Size.fromHeight(50),
-        //   child: Container(
-        //     decoration: BoxDecoration(
-        //       border: Border(
-        //         bottom: BorderSide(
-        //           color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
-        //         ),
-        //       ),
-        //     ),
-        //     child: TabBar(
-        //       controller: _tabController,
-        //       labelColor: AppColors.primary,
-        //       unselectedLabelColor: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-        //       indicatorColor: AppColors.primary,
-        //       indicatorWeight: 3,
-        //       indicatorSize: TabBarIndicatorSize.tab,
-        //       labelStyle: const TextStyle(
-        //         fontSize: 16,
-        //         fontWeight: FontWeight.w600,
-        //       ),
-        //       unselectedLabelStyle: const TextStyle(
-        //         fontSize: 16,
-        //         fontWeight: FontWeight.w500,
-        //       ),
-        //       tabs: const [
-        //         Tab(text: 'SMS'),
-        //         Tab(text: 'CHAT'),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-      ),
-      body: _buildConversationsTab(isDark), // Show only SMS conversations (CHAT tab commented for future)
-      // COMMENTED: TabBarView for future CHAT tab implementation (Wickr-style)
-      // body: TabBarView(
-      //   controller: _tabController,
-      //   children: [
-      //     _buildConversationsTab(isDark), // SMS tab shows conversations
-      //     _buildChatTab(isDark), // Chat tab for future secure chat
-      //   ],
-      // ),
-      bottomNavigationBar: _isEditMode ? _buildEditModeToolbar(isDark) : null,
+      appBar: _isEditMode
+          ? _buildSelectionAppBar(isDark)
+          : _buildNormalAppBar(isDark),
+      body: _buildConversationsTab(isDark),
     );
   }
 
-  /// Build toolbar for edit mode with actions
+  /// Build normal AppBar (not in selection mode)
+  PreferredSizeWidget _buildNormalAppBar(bool isDark) {
+    return AppBar(
+      backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
+      elevation: 0,
+      title: Text(
+        'TuGuardian',
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      centerTitle: true,
+      actions: [
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+  }
+
+  /// Build contextual AppBar for selection mode (WhatsApp style)
+  PreferredSizeWidget _buildSelectionAppBar(bool isDark) {
+    int count = _selectedConversations.length;
+
+    return AppBar(
+      backgroundColor: AppColors.primary,
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          setState(() {
+            _isEditMode = false;
+            _selectedConversations.clear();
+          });
+        },
+        icon: const Icon(Icons.close, color: Colors.white),
+      ),
+      title: Text(
+        '$count seleccionado${count != 1 ? 's' : ''}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      actions: [
+        // Delete button
+        IconButton(
+          onPressed: count > 0 ? () => _showDeleteConfirmation(isDark) : null,
+          icon: Icon(
+            Icons.delete_outline,
+            color: count > 0 ? Colors.white : Colors.white54,
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  /// Build toolbar for edit mode with actions (DEPRECATED - kept for reference)
   Widget _buildEditModeToolbar(bool isDark) {
     final smsProvider = Provider.of<SMSProvider>(context, listen: false);
     int selectedCount = _selectedConversations.length;
@@ -700,39 +679,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     bool isSelected = _selectedConversations.contains(conversation.sender);
 
-    return GestureDetector(
-      onTap: () {
-        if (_isEditMode) {
-          // In edit mode, toggle selection
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onLongPress: () {
+          // Long press starts selection mode and selects this item
           setState(() {
-            if (isSelected) {
-              _selectedConversations.remove(conversation.sender);
-            } else {
-              _selectedConversations.add(conversation.sender);
-            }
+            _isEditMode = true;
+            _selectedConversations.add(conversation.sender);
           });
-        } else {
-          // Normal mode: open conversation
-          final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+        },
+        onTap: () {
+          if (_isEditMode) {
+            // In edit mode, toggle selection
+            setState(() {
+              if (isSelected) {
+                _selectedConversations.remove(conversation.sender);
+                // Exit edit mode if no selections left
+                if (_selectedConversations.isEmpty) {
+                  _isEditMode = false;
+                }
+              } else {
+                _selectedConversations.add(conversation.sender);
+              }
+            });
+          } else {
+            // Normal mode: open conversation
+            final smsProvider = Provider.of<SMSProvider>(context, listen: false);
 
-          // Mark as read when tapped
-          setState(() {
-            _readConversations.add(conversation.sender);
-          });
+            // Mark as read when tapped
+            setState(() {
+              _readConversations.add(conversation.sender);
+            });
 
-          // Mark messages as read in provider (updates badge)
-          smsProvider.markMessagesAsRead(conversation.sender);
+            // Mark messages as read in provider (updates badge)
+            smsProvider.markMessagesAsRead(conversation.sender);
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ConversationScreen(conversation: conversation),
-            ),
-          );
-        }
-      },
-      child: Container(
-        color: isDark ? AppColors.darkBackground : Colors.white,
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConversationScreen(conversation: conversation),
+              ),
+            );
+          }
+        },
+        child: Container(
+        color: isSelected
+            ? (isDark ? AppColors.primary.withOpacity(0.2) : AppColors.primary.withOpacity(0.1))
+            : (isDark ? AppColors.darkBackground : Colors.white),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
@@ -835,6 +829,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               size: 18,
             ),
           ],
+        ),
         ),
       ),
     );
