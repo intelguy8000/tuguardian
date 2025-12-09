@@ -4,6 +4,7 @@ import 'detection_service.dart';
 import 'notification_service.dart';
 import 'database_service.dart';
 import 'hidden_messages_service.dart';
+import 'retention_settings_service.dart';
 import '../shared/models/sms_message.dart';
 
 /// Background message handler (must be top-level function with @pragma annotation)
@@ -145,26 +146,60 @@ class SMSListenerService {
   
   Future<List<SMSMessage>> loadHistoricalSMS() async {
     try {
+      final stopwatch = Stopwatch()..start();
       print('📚 Cargando SMS históricos...');
 
-      // Inicializar servicio de mensajes ocultos
+      // Inicializar servicios
       await HiddenMessagesService.initialize();
+      await RetentionSettingsService.initialize();
 
-      List<SmsMessage> messages = await telephony.getInboxSms(
-        columns: [
-          SmsColumn.ADDRESS,
-          SmsColumn.BODY,
-          SmsColumn.DATE,
-          SmsColumn.ID,
-        ],
-        sortOrder: [
-          OrderBy(SmsColumn.DATE, sort: Sort.DESC),
-        ],
-      );
+      // Obtener configuración de retención
+      final retentionPeriod = RetentionSettingsService.currentPeriod;
+      final cutoffTimestamp = retentionPeriod.cutoffTimestamp;
 
-      print('📱 Encontrados ${messages.length} SMS en dispositivo');
+      print('⚙️ Período de retención: ${retentionPeriod.label}');
 
-      // Filtrar mensajes de senders ocultos ANTES de analizar
+      // Construir query con filtro de fecha si aplica
+      List<SmsMessage> messages;
+
+      if (cutoffTimestamp != null) {
+        // OPTIMIZACIÓN: Filtrar por fecha a nivel de query (nativo)
+        print('🔍 Filtrando mensajes desde: ${retentionPeriod.cutoffDate}');
+
+        messages = await telephony.getInboxSms(
+          columns: [
+            SmsColumn.ADDRESS,
+            SmsColumn.BODY,
+            SmsColumn.DATE,
+            SmsColumn.ID,
+          ],
+          filter: SmsFilter.where(SmsColumn.DATE)
+              .greaterThan(cutoffTimestamp.toString()),
+          sortOrder: [
+            OrderBy(SmsColumn.DATE, sort: Sort.DESC),
+          ],
+        );
+      } else {
+        // Sin filtro de fecha (modo "Todos")
+        print('⚠️ Modo "Todos" - cargando todos los SMS (puede ser lento)');
+
+        messages = await telephony.getInboxSms(
+          columns: [
+            SmsColumn.ADDRESS,
+            SmsColumn.BODY,
+            SmsColumn.DATE,
+            SmsColumn.ID,
+          ],
+          sortOrder: [
+            OrderBy(SmsColumn.DATE, sort: Sort.DESC),
+          ],
+        );
+      }
+
+      final queryTime = stopwatch.elapsedMilliseconds;
+      print('📱 Query completado en ${queryTime}ms - ${messages.length} SMS encontrados');
+
+      // Filtrar mensajes de senders ocultos
       List<SmsMessage> visibleMessages = messages.where((msg) {
         String sender = msg.address ?? 'Desconocido';
         return !HiddenMessagesService.isHiddenSync(sender);
@@ -175,7 +210,10 @@ class SMSListenerService {
         print('🙈 $hiddenCount SMS ocultos (conversaciones eliminadas)');
       }
 
-      List<SMSMessage> analyzed = visibleMessages.take(100).map((msg) {
+      // Analizar todos los mensajes visibles (ya no hay .take(100))
+      final analysisStart = stopwatch.elapsedMilliseconds;
+
+      List<SMSMessage> analyzed = visibleMessages.map((msg) {
         return DetectionService.analyzeMessage(
           msg.id.toString(),
           msg.address ?? 'Desconocido',
@@ -184,10 +222,14 @@ class SMSListenerService {
         );
       }).toList();
 
-      print('✅ ${analyzed.length} SMS analizados');
+      final analysisTime = stopwatch.elapsedMilliseconds - analysisStart;
+      stopwatch.stop();
+
+      print('✅ ${analyzed.length} SMS analizados en ${analysisTime}ms');
       print('   Peligrosos: ${analyzed.where((m) => m.isDangerous).length}');
       print('   Moderados: ${analyzed.where((m) => m.isModerate).length}');
       print('   Seguros: ${analyzed.where((m) => m.isSafe).length}');
+      print('⏱️ TIEMPO TOTAL: ${stopwatch.elapsedMilliseconds}ms');
 
       return analyzed;
 

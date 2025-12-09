@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../../shared/providers/sms_provider.dart';
 import '../../core/app_colors.dart';
+import '../../services/retention_settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,6 +15,23 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
+  RetentionPeriod _selectedRetentionPeriod = RetentionSettingsService.currentPeriod;
+  bool _isLoadingRetention = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRetentionSetting();
+  }
+
+  Future<void> _loadRetentionSetting() async {
+    await RetentionSettingsService.initialize();
+    if (mounted) {
+      setState(() {
+        _selectedRetentionPeriod = RetentionSettingsService.currentPeriod;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +70,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionHeader('Protección', isDark),
             const SizedBox(height: 12),
             _buildProtectionCard(isDark),
+
+            const SizedBox(height: 16),
+
+            // Período de mensajes
+            _buildSettingsCard(
+              isDark,
+              children: [
+                _buildRetentionPeriodTile(isDark),
+              ],
+            ),
 
             const SizedBox(height: 24),
 
@@ -331,6 +359,225 @@ class _SettingsScreenState extends State<SettingsScreen> {
       indent: 16,
       endIndent: 16,
     );
+  }
+
+  /// Widget para seleccionar período de retención de mensajes
+  Widget _buildRetentionPeriodTile(bool isDark) {
+    return ListTile(
+      leading: Icon(
+        Icons.schedule,
+        color: AppColors.primary,
+        size: 24,
+      ),
+      title: Text(
+        'Período de mensajes',
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        _selectedRetentionPeriod.label,
+        style: TextStyle(
+          color: AppColors.primary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: _isLoadingRetention
+          ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(
+              Icons.chevron_right,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade400,
+            ),
+      onTap: _isLoadingRetention ? null : () => _showRetentionPeriodDialog(isDark),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    );
+  }
+
+  /// Muestra diálogo para seleccionar período de retención
+  void _showRetentionPeriodDialog(bool isDark) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+        title: Text(
+          'Período de mensajes',
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Selecciona cuántos mensajes históricos mostrar:',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...RetentionPeriod.values.map((period) => _buildRetentionOption(period, isDark)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Opción individual de período de retención
+  Widget _buildRetentionOption(RetentionPeriod period, bool isDark) {
+    final isSelected = _selectedRetentionPeriod == period;
+    final isUnlimited = period == RetentionPeriod.unlimited;
+
+    return InkWell(
+      onTap: () async {
+        Navigator.pop(context);
+        await _updateRetentionPeriod(period);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected
+              ? Border.all(color: AppColors.primary, width: 1.5)
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              color: isSelected ? AppColors.primary : (isDark ? Colors.grey[500] : Colors.grey[400]),
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    period.label,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  if (isUnlimited)
+                    Text(
+                      'Puede ser lento en dispositivos con muchos SMS',
+                      style: TextStyle(
+                        color: Colors.orange[700],
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (period == RetentionPeriod.sixMonths)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Recomendado',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Actualiza el período de retención y recarga los mensajes
+  Future<void> _updateRetentionPeriod(RetentionPeriod period) async {
+    if (period == _selectedRetentionPeriod) return;
+
+    setState(() {
+      _isLoadingRetention = true;
+    });
+
+    // Guardar preferencia
+    await RetentionSettingsService.setPeriod(period);
+
+    setState(() {
+      _selectedRetentionPeriod = period;
+    });
+
+    // Recargar mensajes con nuevo período
+    final smsProvider = Provider.of<SMSProvider>(context, listen: false);
+
+    // Mostrar snackbar de carga
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('Recargando mensajes (${period.label})...'),
+            ),
+          ],
+        ),
+        duration: Duration(seconds: 10),
+      ),
+    );
+
+    try {
+      // Recargar mensajes
+      await smsProvider.enableRealMode();
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ ${smsProvider.realMessages.length} mensajes cargados'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Error recargando mensajes'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    setState(() {
+      _isLoadingRetention = false;
+    });
   }
 
   void _showAboutDialog() {
