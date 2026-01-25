@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_screen.dart';
 import '../features/home/home_screen.dart';
+import '../services/daily_summary_service.dart';
+import '../services/daily_stats_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,6 +22,14 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkFirstLaunch() async {
     // Breve delay para mostrar splash (UX profesional)
     await Future.delayed(const Duration(milliseconds: 800));
+
+    // Inicializar servicios de estadísticas y resumen diario (no bloquear si falla)
+    try {
+      await DailyStatsService.initialize();
+      await DailySummaryService.initialize();
+    } catch (e) {
+      print('⚠️ Error inicializando servicios: $e');
+    }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;

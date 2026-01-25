@@ -5,6 +5,7 @@ import 'notification_service.dart';
 import 'database_service.dart';
 import 'hidden_messages_service.dart';
 import 'retention_settings_service.dart';
+import 'daily_stats_service.dart';
 import '../shared/models/sms_message.dart';
 
 /// Background message handler (must be top-level function with @pragma annotation)
@@ -28,16 +29,22 @@ void backgroundMessageHandler(SmsMessage message) async {
     print('   Score: ${analyzed.riskScore}');
     print('   Peligroso: ${analyzed.isDangerous}');
 
-    // Initialize notification service
-    await NotificationService.initialize();
+    // GUARDIÁN SILENCIOSO: No notificar, solo trackear estadísticas
+    // Las notificaciones se envían en el resumen diario (6:00 PM)
+    await DailyStatsService.initialize();
 
-    // Show appropriate notification
     if (analyzed.isDangerous) {
-      await NotificationService.showDangerAlert(analyzed);
-      print('🚨 [BACKGROUND] Alerta de amenaza enviada');
-    } else if (analyzed.isSafe || analyzed.isModerate) {
-      await NotificationService.showSafeMessageGrouped();
-      print('✅ [BACKGROUND] Notificación agrupada actualizada');
+      // 🔴 PELIGROSO: Bloqueo silencioso + incluir en resumen
+      await DailyStatsService.incrementBlocked();
+      print('🛡️ [BACKGROUND] Mensaje bloqueado silenciosamente');
+    } else if (analyzed.isModerate) {
+      // 🟡 SOSPECHOSO: Solo trackear (badge en app)
+      await DailyStatsService.incrementCaution();
+      print('⚠️ [BACKGROUND] Mensaje sospechoso trackeado');
+    } else {
+      // 🟢 SEGURO: Solo trackear
+      await DailyStatsService.incrementSafe();
+      print('✅ [BACKGROUND] Mensaje seguro trackeado');
     }
 
     // Save to database
@@ -129,11 +136,21 @@ class SMSListenerService {
       print('   Score: ${analyzed.riskScore}');
       print('   Peligroso: ${analyzed.isDangerous}');
 
-      // Show notification (foreground also gets notifications)
+      // GUARDIÁN SILENCIOSO: No notificar, solo trackear estadísticas
+      await DailyStatsService.initialize();
+
       if (analyzed.isDangerous) {
-        await NotificationService.showDangerAlert(analyzed);
-      } else if (analyzed.isSafe || analyzed.isModerate) {
-        await NotificationService.showSafeMessageGrouped();
+        // 🔴 PELIGROSO: Bloqueo silencioso
+        await DailyStatsService.incrementBlocked();
+        print('🛡️ [FOREGROUND] Mensaje bloqueado silenciosamente');
+      } else if (analyzed.isModerate) {
+        // 🟡 SOSPECHOSO: Solo trackear
+        await DailyStatsService.incrementCaution();
+        print('⚠️ [FOREGROUND] Mensaje sospechoso trackeado');
+      } else {
+        // 🟢 SEGURO: Solo trackear
+        await DailyStatsService.incrementSafe();
+        print('✅ [FOREGROUND] Mensaje seguro trackeado');
       }
 
       // Update UI through callback

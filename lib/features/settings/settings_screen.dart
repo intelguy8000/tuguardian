@@ -5,6 +5,7 @@ import '../../shared/providers/theme_provider.dart';
 import '../../shared/providers/sms_provider.dart';
 import '../../core/app_colors.dart';
 import '../../services/retention_settings_service.dart';
+import '../../services/daily_summary_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,10 +19,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   RetentionPeriod _selectedRetentionPeriod = RetentionSettingsService.currentPeriod;
   bool _isLoadingRetention = false;
 
+  // Resumen diario
+  bool _dailySummaryEnabled = true;
+  TimeOfDay _dailySummaryTime = const TimeOfDay(hour: 18, minute: 0);
+
   @override
   void initState() {
     super.initState();
     _loadRetentionSetting();
+    _loadDailySummarySetting();
   }
 
   Future<void> _loadRetentionSetting() async {
@@ -29,6 +35,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       setState(() {
         _selectedRetentionPeriod = RetentionSettingsService.currentPeriod;
+      });
+    }
+  }
+
+  Future<void> _loadDailySummarySetting() async {
+    await DailySummaryService.initialize();
+    if (mounted) {
+      setState(() {
+        _dailySummaryEnabled = DailySummaryService.isEnabled;
+        _dailySummaryTime = DailySummaryService.scheduleTimeOfDay;
       });
     }
   }
@@ -83,19 +99,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 24),
 
-            // Notificaciones
-            _buildSectionHeader('Notificaciones', isDark),
+            // Notificaciones - Resumen Diario
+            _buildSectionHeader('Resumen Diario', isDark),
             const SizedBox(height: 12),
             _buildSettingsCard(
               isDark,
               children: [
-                _buildSwitchTile(
-                  'Notificaciones push',
-                  'Recibe alertas de amenazas',
-                  _notificationsEnabled,
-                  (value) => setState(() => _notificationsEnabled = value),
-                  isDark,
-                ),
+                _buildDailySummarySection(isDark),
               ],
             ),
 
@@ -862,6 +872,215 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  /// Widget para configurar resumen diario
+  Widget _buildDailySummarySection(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Descripción
+          Row(
+            children: [
+              Icon(
+                Icons.summarize,
+                color: AppColors.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Resumen de protección',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Recibe un resumen diario de los mensajes bloqueados',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          Divider(color: isDark ? AppColors.darkBorder : Colors.grey.shade200),
+          const SizedBox(height: 8),
+
+          // Toggle activar/desactivar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Activar resumen diario',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              Switch(
+                value: _dailySummaryEnabled,
+                onChanged: (value) async {
+                  setState(() => _dailySummaryEnabled = value);
+                  await DailySummaryService.setEnabled(value);
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          value
+                              ? 'Resumen diario activado'
+                              : 'Resumen diario desactivado',
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                activeColor: AppColors.primary,
+              ),
+            ],
+          ),
+
+          // Selector de hora (solo si está activado)
+          if (_dailySummaryEnabled) ...[
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => _showTimePicker(isDark),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkBackground : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hora del resumen',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatTimeOfDay(_dailySummaryTime),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: isDark ? Colors.grey[400] : Colors.grey[400],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Botón para probar resumen ahora
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  await DailySummaryService.showNow();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Resumen enviado (revisa tus notificaciones)'),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.notifications_active),
+                label: const Text('Probar resumen ahora'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Mostrar selector de hora
+  Future<void> _showTimePicker(bool isDark) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _dailySummaryTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onSurface: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _dailySummaryTime) {
+      setState(() => _dailySummaryTime = picked);
+      await DailySummaryService.setScheduleTime(picked.hour, picked.minute);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Resumen programado para ${_formatTimeOfDay(picked)}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Formatear TimeOfDay a string legible
+  String _formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
   }
 
   /// NUEVO: Card de protección con botón para activar modo real
