@@ -139,28 +139,14 @@ class TuGuardianAnalysisBuilder {
 
     String reasonsText = reasons.join('\n');
 
-    String officialChannels = '';
-    if (sms.detectedEntities != null && sms.detectedEntities!.isNotEmpty) {
-      var entity = sms.detectedEntities!.first;
-      officialChannels = '\n\n✅ CONTACTA A ${entity.name.toUpperCase()} POR:\n';
-      if (entity.hasApp) officialChannels += '📱 App oficial  ';
-      if (entity.hasWebsite) officialChannels += '🌐 ${entity.website}';
-      if (entity.hasWhatsApp) officialChannels += '\n📞 WhatsApp oficial';
-    }
-
-    return '🚫 Bloqueé este mensaje\n\n$reasonsText\n⚠️ Riesgo: ${sms.riskScore}%$officialChannels';
+    // No mostrar canales de entidades - podemos detectar incorrectamente
+    // El mensaje es peligroso, la acción correcta es ignorarlo
+    return '🚫 Bloqueé este mensaje\n\n$reasonsText\n🔴 Muy Peligroso';
   }
 
   static String _buildModerateAnalysis(SMSMessage sms) {
-    String warning = '⚠️ Ten cuidado con este mensaje\n\n';
-
-    if (sms.detectedEntities != null && sms.detectedEntities!.isNotEmpty) {
-      var entity = sms.detectedEntities!.first;
-      warning += '🏢 Menciona: ${entity.name}\n\n';
-      warning += '💡 Verifica en canales oficiales:\n';
-      if (entity.hasApp) warning += '📱 App oficial  ';
-      if (entity.hasWebsite) warning += '🌐 Web oficial';
-    }
+    String warning = '🟡 Sospechoso\n\n';
+    warning += 'Verifica antes de actuar';
 
     return warning;
   }

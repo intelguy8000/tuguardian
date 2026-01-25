@@ -19,12 +19,10 @@ class ConversationScreen extends StatefulWidget {
 }
 
 class _ConversationScreenState extends State<ConversationScreen> {
-  final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
-    _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -159,80 +157,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               },
             ),
           ),
-
-          // Message input (for future send functionality)
-          _buildMessageInput(isDark),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMessageInput(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
-          ),
-        ),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: SafeArea(
-        child: Row(
-          children: [
-            // Text input
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkBackground : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
-                  ),
-                ),
-                child: TextField(
-                  controller: _messageController,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black,
-                    fontSize: 15,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Enviar mensaje...',
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  maxLines: null,
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-              ),
-            ),
-
-            SizedBox(width: 8),
-
-            // Send button
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.send, color: Colors.white, size: 20),
-                onPressed: () {
-                  // TODO: Implement send SMS functionality
-                  if (_messageController.text.trim().isNotEmpty) {
-                    _showComingSoonDialog();
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -299,25 +224,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
               backgroundColor: AppColors.primary,
             ),
             child: Text('Reportar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showComingSoonDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('🚧 Próximamente'),
-        content: Text(
-          'La función de enviar SMS estará disponible pronto.\n\n'
-          'Por ahora TuGuardian protege tus mensajes recibidos.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Entendido'),
           ),
         ],
       ),

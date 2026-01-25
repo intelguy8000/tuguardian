@@ -60,45 +60,11 @@ class TuGuardianAnalysisWidget extends StatelessWidget {
     }
 
     widgets.add(SizedBox(height: 8));
-    widgets.add(Text('⚠️ Riesgo: ${sms.riskScore}%', style: baseStyle.copyWith(fontWeight: FontWeight.w600)));
+    // CORRECCIÓN 3: Mostrar texto en vez de porcentaje
+    widgets.add(Text('🔴 Muy Peligroso', style: baseStyle.copyWith(fontWeight: FontWeight.w600, color: Colors.red.shade700)));
 
-    // Official channels buttons
-    if (sms.detectedEntities != null && sms.detectedEntities!.isNotEmpty) {
-      var entity = sms.detectedEntities!.first;
-      widgets.add(SizedBox(height: 16));
-      widgets.add(Text(
-        '✅ CONTACTA A ${entity.name.toUpperCase()} POR:',
-        style: baseStyle.copyWith(fontWeight: FontWeight.w700, color: Colors.green.shade700),
-      ));
-      widgets.add(SizedBox(height: 8));
-
-      // Add buttons for each channel
-      if (entity.hasApp) {
-        widgets.add(_buildChannelButton(
-          icon: Icons.phone_android,
-          label: 'App oficial de ${entity.name}',
-          onTap: () => _showAppSuggestion(context, entity.name),
-        ));
-        widgets.add(SizedBox(height: 6));
-      }
-
-      if (entity.hasWebsite) {
-        widgets.add(_buildChannelButton(
-          icon: Icons.language,
-          label: entity.website!.replaceAll('https://', '').replaceAll('http://', ''),
-          onTap: () => _launchURL(entity.website!),
-        ));
-        widgets.add(SizedBox(height: 6));
-      }
-
-      if (entity.hasWhatsApp) {
-        widgets.add(_buildChannelButton(
-          icon: Icons.chat,
-          label: 'WhatsApp oficial',
-          onTap: () => _launchURL(entity.whatsappUrl),
-        ));
-      }
-    }
+    // CORRECCIÓN 1: No mostrar canales de entidades - podemos detectar incorrectamente
+    // El mensaje es peligroso, la acción correcta es ignorarlo
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,44 +73,14 @@ class TuGuardianAnalysisWidget extends StatelessWidget {
   }
 
   Widget _buildModerateAnalysis(BuildContext context) {
-    List<Widget> widgets = [];
-
-    widgets.add(Text('⚠️ Ten cuidado con este mensaje', style: baseStyle.copyWith(fontWeight: FontWeight.w700)));
-
-    if (sms.detectedEntities != null && sms.detectedEntities!.isNotEmpty) {
-      var entity = sms.detectedEntities!.first;
-
-      widgets.add(SizedBox(height: 12));
-      widgets.add(Text('🏢 Menciona: ${entity.name}', style: baseStyle));
-
-      widgets.add(SizedBox(height: 12));
-      widgets.add(Text(
-        '💡 Verifica en canales oficiales:',
-        style: baseStyle.copyWith(fontWeight: FontWeight.w600),
-      ));
-      widgets.add(SizedBox(height: 8));
-
-      if (entity.hasApp) {
-        widgets.add(_buildChannelButton(
-          icon: Icons.phone_android,
-          label: 'App oficial de ${entity.name}',
-          onTap: () => _showAppSuggestion(context, entity.name),
-        ));
-        widgets.add(SizedBox(height: 6));
-      }
-
-      if (entity.hasWebsite) {
-        widgets.add(_buildChannelButton(
-          icon: Icons.language,
-          label: entity.website!.replaceAll('https://', '').replaceAll('http://', ''),
-          onTap: () => _launchURL(entity.website!),
-        ));
-      }
-    }
-
+    // CORRECCIÓN 3: Texto simple y claro para Silver Tech
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
+      children: [
+        Text('🟡 Sospechoso', style: baseStyle.copyWith(fontWeight: FontWeight.w700, color: Colors.orange.shade700)),
+        SizedBox(height: 8),
+        Text('Verifica antes de actuar', style: baseStyle),
+      ],
     );
   }
 
