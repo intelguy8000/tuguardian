@@ -7,6 +7,7 @@ import '../../services/database_service.dart';
 import '../../services/badge_service.dart';
 import '../../services/blocked_senders_service.dart';
 import '../../services/hidden_messages_service.dart';
+import '../../services/read_messages_service.dart';
 
 class SMSProvider with ChangeNotifier {
   // LISTAS SEPARADAS
@@ -17,8 +18,7 @@ class SMSProvider with ChangeNotifier {
   String? _error;
   bool _isRealModeEnabled = false;
 
-  // UNREAD TRACKING
-  Set<String> _readMessageIds = <String>{};
+  // UNREAD TRACKING - Ahora usa ReadMessagesService para persistencia
 
   // SERVICIOS
   final SMSListenerService _listenerService = SMSListenerService();
@@ -61,8 +61,9 @@ class SMSProvider with ChangeNotifier {
   bool get isRealModeEnabled => _isRealModeEnabled;
 
   // UNREAD COUNT - Only count real SMS messages (not demo)
+  // Usa ReadMessagesService para persistencia
   int get unreadCount {
-    return _realMessages.where((msg) => !_readMessageIds.contains(msg.id)).length;
+    return _realMessages.where((msg) => !ReadMessagesService.isRead(msg.id)).length;
   }
   
   // ESTADÍSTICAS DEMO
@@ -96,6 +97,7 @@ class SMSProvider with ChangeNotifier {
     _autoEnableRealMode(); // Auto-enable real-time protection
     BlockedSendersService.initialize(); // Initialize blocked senders
     HiddenMessagesService.initialize(); // Initialize hidden messages tracking
+    ReadMessagesService.initialize(); // Initialize read messages tracking
   }
 
   /// Auto-enable real mode on app start
@@ -124,10 +126,13 @@ class SMSProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    
+
     try {
       print('🚀 Activando modo real...');
-      
+
+      // 0. INICIALIZAR SERVICIO DE MENSAJES LEÍDOS (debe completarse antes de cargar SMS)
+      await ReadMessagesService.initialize();
+
       // 1. SOLICITAR PERMISOS
       bool granted = await _listenerService.requestPermissions();
       if (!granted) {
@@ -377,13 +382,12 @@ class SMSProvider with ChangeNotifier {
   }
 
   /// Mark messages from a specific sender as read
-  void markMessagesAsRead(String sender) {
+  Future<void> markMessagesAsRead(String sender) async {
     // Find all messages from this sender and mark as read
     List<SMSMessage> senderMessages = _realMessages.where((msg) => msg.sender == sender).toList();
+    List<String> messageIds = senderMessages.map((msg) => msg.id).toList();
 
-    for (var msg in senderMessages) {
-      _readMessageIds.add(msg.id);
-    }
+    await ReadMessagesService.markMultipleAsRead(messageIds);
 
     // Update badge
     _updateBadge();
@@ -392,27 +396,33 @@ class SMSProvider with ChangeNotifier {
   }
 
   /// Mark a specific message as read
-  void markMessageAsRead(String messageId) {
-    _readMessageIds.add(messageId);
+  Future<void> markMessageAsRead(String messageId) async {
+    await ReadMessagesService.markAsRead(messageId);
     _updateBadge();
     notifyListeners();
   }
 
   /// Check if a message is read
   bool isMessageRead(String messageId) {
-    return _readMessageIds.contains(messageId);
+    return ReadMessagesService.isRead(messageId);
+  }
+
+  /// Check if a sender has any unread messages
+  bool hasUnreadMessagesFromSender(String sender) {
+    List<SMSMessage> senderMessages = _realMessages.where((msg) => msg.sender == sender).toList();
+    return senderMessages.any((msg) => !ReadMessagesService.isRead(msg.id));
   }
 
   /// Mark messages from specific senders as unread
-  void markMessagesAsUnread(List<String> senders) {
+  Future<void> markMessagesAsUnread(List<String> senders) async {
     // Find all messages from these senders and mark as unread
+    List<String> messageIds = [];
     for (String sender in senders) {
       List<SMSMessage> senderMessages = _realMessages.where((msg) => msg.sender == sender).toList();
-
-      for (var msg in senderMessages) {
-        _readMessageIds.remove(msg.id);
-      }
+      messageIds.addAll(senderMessages.map((msg) => msg.id));
     }
+
+    await ReadMessagesService.markMultipleAsUnread(messageIds);
 
     // Update badge
     _updateBadge();
@@ -427,8 +437,8 @@ class SMSProvider with ChangeNotifier {
   }
 
   /// Clear all read status (for testing)
-  void clearReadStatus() {
-    _readMessageIds.clear();
+  Future<void> clearReadStatus() async {
+    await ReadMessagesService.clearAll();
     _updateBadge();
     notifyListeners();
   }
@@ -436,19 +446,22 @@ class SMSProvider with ChangeNotifier {
   /// Delete conversations from specific senders (persists across app restarts)
   Future<void> deleteConversations(List<String> senders) async {
     try {
+      List<String> messageIdsToRemove = [];
+
       for (String sender in senders) {
         // 1. PERSISTIR: Marcar sender como oculto (sobrevive reinicios)
         await HiddenMessagesService.hideSender(sender);
 
-        // 2. Limpiar tracking de lectura
+        // 2. Recolectar IDs para limpiar tracking de lectura
         List<SMSMessage> messagesToDelete = _realMessages.where((msg) => msg.sender == sender).toList();
-        for (var msg in messagesToDelete) {
-          _readMessageIds.remove(msg.id);
-        }
+        messageIdsToRemove.addAll(messagesToDelete.map((msg) => msg.id));
 
         // 3. Remover de memoria para efecto inmediato
         _realMessages.removeWhere((msg) => msg.sender == sender);
       }
+
+      // 4. Limpiar tracking de lectura en batch
+      await ReadMessagesService.markMultipleAsUnread(messageIdsToRemove);
 
       // Update badge count
       _updateBadge();

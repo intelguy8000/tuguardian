@@ -645,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               indent: 70,
             ),
             itemBuilder: (context, index) {
-              return _buildConversationRow(conversations[index], isDark);
+              return _buildConversationRow(conversations[index], isDark, smsProvider);
             },
           ),
         );
@@ -653,9 +653,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildConversationRow(Conversation conversation, bool isDark) {
-    // Check if conversation is unread
-    bool isUnread = !_readConversations.contains(conversation.sender);
+  Widget _buildConversationRow(Conversation conversation, bool isDark, SMSProvider smsProvider) {
+    // Check if conversation is unread (usando persistencia)
+    bool isUnread = smsProvider.hasUnreadMessagesFromSender(conversation.sender);
 
     // Get the actual SMS content for preview (not TuGuardian's analysis)
     String previewMessage = '';
